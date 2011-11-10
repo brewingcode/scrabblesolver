@@ -15,7 +15,7 @@ public class Tile {
 	// 2:right, 3:down, 4:left
 	public int row, col, dir;
 	
-	// letter, empty string if letter is not set yet
+	// the letter that is currently on the tile
 	public char letter;
 	
 	// multipliers
