@@ -11,31 +11,17 @@ public class Board {
 			}
 		}
 		
-		setRules("wordsWithFriends");
+		wordsWithFriends();
 	}
 
-	// setup board with specific rules, currently only knows "wordsWithFriends"
-	// but might add "scrabble" later
-	public boolean setRules(String ruleset) {
-		if (letterValues != null) {
-			System.err.println("Board::setRules can't be called a second time");
-			return false;
-		}
+	// setup board with WWF rules
+	private void wordsWithFriends() {
+		letterValues = new int[] { 1, 4, 4, 2, 1, 4, 3, 3, 1, 10, 5, 2, 4, 2, 1, 4, 10, 1, 1, 1, 2, 5, 4, 8, 3, 10 };
 		
-		if (ruleset == "wordsWithFriends") {
-			letterValues = new int[] { 1, 4, 4, 2, 1, 4, 3, 3, 1, 10, 5, 2, 4, 2, 1, 4, 10, 1, 1, 1, 2, 5, 4, 8, 3, 10 };
-			
-			wordsWithFriendsQuadrant(1,1);
-			wordsWithFriendsQuadrant(-1,1);
-			wordsWithFriendsQuadrant(1,-1);
-			wordsWithFriendsQuadrant(-1,-1);
-		}
-		else {
-			System.err.println("unknown ruleSet: " + ruleset);
-			return false;
-		}
-		
-		return true;
+		wordsWithFriendsQuadrant(1,1);
+		wordsWithFriendsQuadrant(-1,1);
+		wordsWithFriendsQuadrant(1,-1);
+		wordsWithFriendsQuadrant(-1,-1);
 	}
 
 	// helper function, assigns bonus tile values in a quadrant of the board
@@ -117,6 +103,7 @@ public class Board {
 		
 		return b;
 	}
+	
 	
 	// the tiles on the board (ie, the state of the game)
 	private Tile[][] tiles;
