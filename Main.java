@@ -21,7 +21,7 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
 		if (args.length < 2) {
-			System.err.println("usage: java Main <dictionary> <board>");
+			System.err.println("usage: java Main <dictionary> <board> [command]");
 			System.exit(1);
 		}
 		
@@ -104,6 +104,7 @@ public class Main {
 		}
 		else {
 			b = new Board(15);
+			storeBoard(b, name);
 		}
 		
 		return b;
