@@ -55,12 +55,19 @@ public class Board implements Serializable {
 		return tiles[row][col];
 	}
 	
+	public String print(String which) {
+		return toString(which);
+	}
+	
 	public String toString() {
+		return toString("letters");
+	}
+	
+	private String toString(String which) {
 		String b = "";
-		String select = "bonuses";
 		int size = tiles.length;
 		
-		if (select == "bonuses") {
+		if (which == "bonuses") {
 			// print out the bonus tiles on the board
 			for (int row = 0; row < size; row++) {
 				for (int col = 0; col < size; col++) {
@@ -89,7 +96,7 @@ public class Board implements Serializable {
 				}
 			}
 		}
-		else if (select == "letters") {
+		else if (which == "letters") {
 			for (int row = 0; row < size; row++) {
 				for (int col = 0; col < size; col++) {
 					b += tiles[row][col].letter;
@@ -102,10 +109,24 @@ public class Board implements Serializable {
 				}
 			}
 		}
+		else {
+			System.err.println("unknown 'which': " + which + " (try 'bonuses' or 'letters')");
+		}
 		
 		return b;
 	}
+
+	// plays the given word at the row and col specified
+	public boolean play(int row, int col, String word) {
+		
+		return false;
+	}
 	
+	// finds the best place to play a given word, and prints the top <limit> 
+	// candidates to System.out
+	public void findbest(String word, int limit) {
+		
+	}
 	
 	// the tiles on the board (ie, the state of the game)
 	private Tile[][] tiles;

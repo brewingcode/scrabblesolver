@@ -65,7 +65,36 @@ public class Main {
 
 		Board b = loadBoard(boardFile);
 		
-		// do stuff
+		if (args.length > 2) {
+			if (args[2] == "print") {
+				if (args.length < 4) {
+					System.err.println("usage: print < 'letters' | 'bonuses' >");
+				}
+				else {
+					b.print(args[3]);
+				}
+			}
+			else if (args[2] == "play") {
+				if (args.length < 6) {
+					System.err.println("usage: play <row> <col> <word>");
+				}
+				else {
+					b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5]);
+				}
+			}
+			else if (args[2] == "findbest") {
+				if (args.length < 5) {
+					System.err.println("usage: findbest <word> <limit>");
+				}
+				else {
+					b.findbest(args[3], Integer.parseInt(args[4]));
+				}
+			}
+			else {
+				System.err.println("unknown command: " + args[2]);
+				System.err.println("commands are: print play findbest");
+			}
+		}
 		
 		storeBoard(b, boardFile);
 	}
