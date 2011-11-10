@@ -55,8 +55,8 @@ public class Board implements Serializable {
 		return tiles[row][col];
 	}
 	
-	public String print(String which) {
-		return toString(which);
+	public void print(String which) {
+		System.out.print(toString(which));
 	}
 	
 	public String toString() {
@@ -67,7 +67,7 @@ public class Board implements Serializable {
 		String b = "";
 		int size = tiles.length;
 		
-		if (which == "bonuses") {
+		if (which.equals("bonuses")) {
 			// print out the bonus tiles on the board
 			for (int row = 0; row < size; row++) {
 				for (int col = 0; col < size; col++) {
@@ -96,7 +96,7 @@ public class Board implements Serializable {
 				}
 			}
 		}
-		else if (which == "letters") {
+		else if (which.equals("letters")) {
 			for (int row = 0; row < size; row++) {
 				for (int col = 0; col < size; col++) {
 					b += tiles[row][col].letter;

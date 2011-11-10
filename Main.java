@@ -20,13 +20,15 @@ public class Main {
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
-		if (args.length < 2) {
-			System.err.println("usage: java Main <dictionary> <board> [command]");
+		if (args.length < 3) {
+			System.err.println("usage: java Main <dictionary file> <board file> [command]");
+			System.err.println("valid commands: print play findbest");
 			System.exit(1);
 		}
 		
 		String dictionaryFile = args[0];
 		String boardFile = args[1];
+		String command = args[2];
 		
 		// read in dictionary of words. dictionary keys are the sorted letters of the word,
 		// dictionary value is an ArrayList of all the words that sort into the key
@@ -65,35 +67,32 @@ public class Main {
 
 		Board b = loadBoard(boardFile);
 		
-		if (args.length > 2) {
-			if (args[2] == "print") {
-				if (args.length < 4) {
-					System.err.println("usage: print < 'letters' | 'bonuses' >");
-				}
-				else {
-					b.print(args[3]);
-				}
-			}
-			else if (args[2] == "play") {
-				if (args.length < 6) {
-					System.err.println("usage: play <row> <col> <word>");
-				}
-				else {
-					b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5]);
-				}
-			}
-			else if (args[2] == "findbest") {
-				if (args.length < 5) {
-					System.err.println("usage: findbest <word> <limit>");
-				}
-				else {
-					b.findbest(args[3], Integer.parseInt(args[4]));
-				}
+		if (command.equals("print")) {
+			if (args.length < 4) {
+				System.err.println("usage: print < 'letters' | 'bonuses' >");
 			}
 			else {
-				System.err.println("unknown command: " + args[2]);
-				System.err.println("commands are: print play findbest");
+				b.print(args[3]);
 			}
+		}
+		else if (command.equals("play")) {
+			if (args.length < 6) {
+				System.err.println("usage: play <row> <col> <word>");
+			}
+			else {
+				b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5]);
+			}
+		}
+		else if (command.equals("findbest")) {
+			if (args.length < 5) {
+				System.err.println("usage: findbest <word> <limit>");
+			}
+			else {
+				b.findbest(args[3], Integer.parseInt(args[4]));
+			}
+		}
+		else {
+			System.err.println("unknown command: " + command);
 		}
 		
 		storeBoard(b, boardFile);
@@ -107,6 +106,8 @@ public class Main {
 			out = new ObjectOutputStream(fos);
 			out.writeObject(b);
 			out.close();
+			
+			System.out.println("stored board in file '" + name + "'");
 		}
 		catch (IOException ex) {
 			ex.printStackTrace();
@@ -126,6 +127,7 @@ public class Main {
 				in = new ObjectInputStream(fis);
 				b = (Board) in.readObject();
 				in.close();
+				System.out.println("loaded board '" + name + "'");
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
