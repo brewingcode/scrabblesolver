@@ -117,7 +117,7 @@ public class Board implements Serializable {
 	}
 
 	// plays the given word at the row and col specified
-	public boolean play(int row, int col, String word) {
+	public boolean play(int row, int col, String word, String dir) {
 		
 		return false;
 	}

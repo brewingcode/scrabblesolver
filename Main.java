@@ -76,11 +76,11 @@ public class Main {
 			}
 		}
 		else if (command.equals("play")) {
-			if (args.length < 6) {
-				System.err.println("usage: play <row> <col> <word>");
+			if (args.length < 7) {
+				System.err.println("usage: play <row> <col> <word> <direction>");
 			}
 			else {
-				b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5]);
+				b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5], args[6]);
 			}
 		}
 		else if (command.equals("findbest")) {
