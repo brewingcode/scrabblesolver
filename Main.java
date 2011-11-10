@@ -22,7 +22,7 @@ public class Main {
 		
 		// read in dictionary of words. dictionary keys are the sorted letters of the word,
 		// dictionary value is an ArrayList of all the words that sort into the key
-		HashMap words = new HashMap();
+		HashMap<String, ArrayList<String>> words = new HashMap<String, ArrayList<String>>();
 		BufferedReader input = null;
 		int wordCount = 0;
 		try {
@@ -35,11 +35,11 @@ public class Main {
 				String key = new String(chars);
 				
 				if (words.containsKey(key)) {
-					ArrayList list = (ArrayList) words.get(key);
+					ArrayList<String> list = (ArrayList<String>) words.get(key);
 					list.add(word);
 				}
 				else {
-					ArrayList list = new ArrayList();
+					ArrayList<String> list = new ArrayList<String>();
 					list.add(word);
 					words.put(key, list);
 				}
