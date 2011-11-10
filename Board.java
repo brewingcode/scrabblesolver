@@ -40,7 +40,7 @@ public class Board {
 
 	// helper function, assigns bonus tile values in a quadrant of the board
 	private void wordsWithFriendsQuadrant(int x, int y) {
-		cartesianIndex(5*x, 0).wordBonus = 2;
+		cartesianIndex(4*x, 0).wordBonus = 2;
 		cartesianIndex(3*x, 1*y).letterBonus = 2;
 		cartesianIndex(7*x, 1*y).letterBonus = 3;
 		cartesianIndex(2*x, 2*y).letterBonus = 3;
@@ -55,7 +55,7 @@ public class Board {
 		cartesianIndex(5*x, 6*y).letterBonus = 2;
 		cartesianIndex(1*x, 7*y).letterBonus = 3;
 		cartesianIndex(4*x, 7*y).wordBonus = 3;
-		cartesianIndex(0, 5*y).wordBonus = 2;
+		cartesianIndex(0, 4*y).wordBonus = 2;
 	}
 	
 	// access a tile based on Cartesian geometry, with {0,0} in the center of the board
