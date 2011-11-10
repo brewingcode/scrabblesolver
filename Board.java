@@ -1,7 +1,9 @@
 package com.alex.scrabblesolver;
 
+import java.io.Serializable;
 
-public class Board {
+
+public class Board implements Serializable {
 	// constructor
 	public Board(int size) {
 		tiles = new Tile[size][size];	

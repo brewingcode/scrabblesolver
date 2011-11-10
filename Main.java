@@ -1,9 +1,14 @@
 package com.alex.scrabblesolver;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,10 +20,13 @@ public class Main {
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
-		if (args.length < 1) {
-			System.err.println("filename of dictionary required");
+		if (args.length < 2) {
+			System.err.println("usage: java Main <dictionary> <board>");
 			System.exit(1);
 		}
+		
+		String dictionaryFile = args[0];
+		String boardFile = args[1];
 		
 		// read in dictionary of words. dictionary keys are the sorted letters of the word,
 		// dictionary value is an ArrayList of all the words that sort into the key
@@ -26,7 +34,7 @@ public class Main {
 		BufferedReader input = null;
 		int wordCount = 0;
 		try {
-			input = new BufferedReader(new FileReader(args[0]));
+			input = new BufferedReader(new FileReader(dictionaryFile));
 			String word;
 			while ((word = input.readLine()) != null) {
 				// sort the letters in the word
@@ -54,8 +62,50 @@ public class Main {
 		}
 		
 		System.out.println("loaded " + wordCount + " words into " + words.size() + " keys");
-		Board b = new Board(15);
-		//System.out.println(b.toString());
+
+		Board b = loadBoard(boardFile);
+		
+		// do stuff
+		
+		storeBoard(b, boardFile);
 	}
 
+	private static void storeBoard(Board b, String name) {
+		FileOutputStream fos = null;
+		ObjectOutputStream out = null;
+		try {
+			fos = new FileOutputStream(name);
+			out = new ObjectOutputStream(fos);
+			out.writeObject(b);
+			out.close();
+		}
+		catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private static Board loadBoard(String name) {
+		Board b = null;
+		
+		boolean exists = (new File(name)).exists();
+		if (exists) {
+			FileInputStream fis = null;
+			ObjectInputStream in = null;
+			
+			try {
+				fis = new FileInputStream(name);
+				in = new ObjectInputStream(fis);
+				b = (Board) in.readObject();
+				in.close();
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		else {
+			b = new Board(15);
+		}
+		
+		return b;
+	}
 }

@@ -1,6 +1,8 @@
 package com.alex.scrabblesolver;
 
-public class Tile {
+import java.io.Serializable;
+
+public class Tile implements Serializable {
 	public Tile(int row, int col) {
 		this.row = row;
 		this.col = col;
