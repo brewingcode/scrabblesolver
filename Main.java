@@ -69,11 +69,16 @@ public class Main {
 		b.dictionary = words;
 		
 		if (command.equals("print")) {
-			if (args.length < 4) {
-				System.err.println("usage: print < 'letters' | 'bonuses' >");
+			if (args.length < 3) {
+				System.err.println("usage: print [ 'bonuses' ]");
 			}
 			else {
-				b.print(args[3]);
+				if (args.length == 3) {
+					b.print("letters");
+				}
+				else {
+					b.print(args[3]);
+				}
 			}
 		}
 		else if (command.equals("play")) {
@@ -88,9 +93,9 @@ public class Main {
 				}
 			}
 		}
-		else if (command.equals("findbest")) {
+		else if (command.equals("find")) {
 			if (args.length < 5) {
-				System.err.println("usage: findbest <word> <limit>");
+				System.err.println("usage: find <letters> <limit>");
 			}
 			else {
 				b.findBest(args[3], Integer.parseInt(args[4]));

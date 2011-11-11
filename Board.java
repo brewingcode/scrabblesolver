@@ -83,6 +83,9 @@ public class Board implements Serializable {
 	}
 	
 	public void print(String which) {
+		if (which == null) {
+			which = "letters";
+		}
 		System.out.print(toString(which));
 	}
 	
