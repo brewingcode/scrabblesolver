@@ -77,10 +77,14 @@ public class Main {
 		}
 		else if (command.equals("play")) {
 			if (args.length < 7) {
-				System.err.println("usage: play <row> <col> <word> <direction>");
+				System.err.println("usage: play <row> <col> <word> < 'right' | 'left' >");
 			}
 			else {
-				b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5], args[6]);
+				int score = b.play(Integer.parseInt(args[3]), Integer.parseInt(args[4]), args[5], args[6]);
+				if (score > 0) {
+					b.print("letters");
+					System.out.println("'" + args[5] + "' was worth " + score + " points");
+				}
 			}
 		}
 		else if (command.equals("findbest")) {

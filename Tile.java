@@ -3,13 +3,18 @@ package com.alex.scrabblesolver;
 import java.io.Serializable;
 
 public class Tile implements Serializable {
+	
+	public static char Empty = '-';
+	
 	public Tile(int row, int col) {
 		this.row = row;
 		this.col = col;
 		dir = 0;
-		letter = '-';
+		letter = Empty;
 		letterBonus = 1;
 		wordBonus = 1;
+		fresh = false;
+		pending = false;
 	}
 	
 	// "row" and "col" are 0-index
@@ -22,4 +27,10 @@ public class Tile implements Serializable {
 	
 	// multipliers
 	public int letterBonus, wordBonus;
+	
+	// used for attempting word placement
+	public boolean pending;
+	
+	// used for undoing 
+	public boolean fresh;
 }
