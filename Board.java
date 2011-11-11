@@ -423,7 +423,6 @@ public class Board implements Serializable {
 		
 		// the list of Word objects that we will build
 		ArrayList<Word> words = new ArrayList<Word>();
-		
 		for (int i = 0; i < tiles.length; i++) {
 			// check row i
 			words.addAll(searchFile(i,0,"row", lettersArray));
@@ -439,32 +438,57 @@ public class Board implements Serializable {
 	}
 	
 	private ArrayList<Word> searchFile(int row, int col, String dir, ArrayList<Character> letters) {
-		// "file" is a row OR a column, after this function we don't care if it's a row or col
-		ArrayList<Character> file = new ArrayList<Character>();
-		boolean check = false;
+		ArrayList<Word> words = new ArrayList<Word>();
+		ArrayList<Character> rowLetters = new ArrayList<Character>();
+		ArrayList<Character> colLetters = new ArrayList<Character>();
+		boolean checkRow = false;
+		boolean checkCol = false;
 		
 		for (int i = 0; i < tiles.length; i++) {
 			if (dir.equals("row")) {
-				file.add(tiles[row][i].letter);
-				if (validTile(row, i)) check = true;
+				rowLetters.add(tiles[row][i].letter);
+				if (validTile(row, i)) checkRow = true;
 			}
 			else if (dir.equals("col")) {
-				file.add(tiles[i][col].letter);
-				if (validTile(i, col)) check = true;
+				colLetters.add(tiles[i][col].letter);
+				if (validTile(i, col)) checkCol = true;
 			}
 		}
 		
-		if (check) {
-			return findWords(letters, file);
+		if (checkRow) {
+			words.addAll(findWords(letters, rowLetters, String.format("row %02d", row)));
 		}
-		else {
-			return new ArrayList<Word>();
+		
+		if (checkCol) {
+			words.addAll(findWords(letters, colLetters, String.format("col %02d", col)));
 		}
+		
+		return words;
 	}
 	
 	// given a bunch of letters, fit them into a series of buckets (with and/or
 	// without existing letters)
-	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets) {
+	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets, String where) {
+		for (char c : buckets) {
+			if (c != Tile.Empty) {
+				letters.add(c);
+			}
+		}
+		
+		Collections.sort(letters);
+		
+		for (String word : allKnownWords(letters)) {
+			
+		}
+		
+		return null;
+	}
+	
+	// given a bunch of sorted letters, return all the words that can be created with them
+	// 1. our dictionary has keys of sorted strings
+	// 2. is our sorted letter string in the dict? 
+	// 3. 
+	private ArrayList<String> allKnownWords(ArrayList<Character> letters) {
 		return null;
 	}
 }
