@@ -7,6 +7,23 @@ import java.util.HashMap;
 
 
 public class Board implements Serializable {
+	
+	// dictionary of words (see Main.java)
+	public transient HashMap<String, ArrayList<String>> dictionary;
+	
+	// bingo rules
+	private int bingoCount;
+	private int bingoBonus;
+	
+	// the tiles on the board (ie, the state of the game)
+	private Tile[][] tiles;
+	
+	// point values of the letters (changes for different rule sets)
+	private int[] letterValues;
+	
+	// what turn we are on
+	private int turn;
+	
 	// constructor
 	public Board(int size) {
 		tiles = new Tile[size][size];
@@ -386,7 +403,7 @@ public class Board implements Serializable {
 	}
 	// finds the best place to play a given word, and prints the top <limit> 
 	// candidates to System.out
-	public void findbest(String word, int limit) {
+	public void findbest(String letters, int limit) {
 		// 1. find all places that are valid (neighboring tile is played)
 		// 2. take the row (or column)
 		// 3. add existing letters to the set of available letters
@@ -395,35 +412,49 @@ public class Board implements Serializable {
 		// 6. score remaining words
 		// 7. sort by score and print
 
+		ArrayList<Word> words = new ArrayList<Word>();
+
 		for (int i = 0; i < tiles.length; i++) {
-			if (validTile(i,0)) {
-				// check row i
-				searchFile(i,0,"row");
-			}
-			if (validTile(0,i)) {
-				// check col i
-				searchFile(0,i,"col");
-			}
+			// check row i
+			words.addAll(searchFile(i,0,"row", letters));
+			// check col i
+			words.addAll(searchFile(0,i,"col", letters));
+		}
+		
+		Collections.sort(words);
+		
+		for (Word w : words) {
+			System.out.println(w);
 		}
 	}
 	
-	private void searchFile(int row, int col, String dir) {
+	private ArrayList<Word> searchFile(int row, int col, String dir, String letters) {
+		// "file" is a row OR a column, after this function we don't care if it's a row or col
+		ArrayList<Character> file = new ArrayList<Character>();
+		boolean check = false;
 		
+		for (int i = 0; i < tiles.length; i++) {
+			if (dir.equals("row")) {
+				file.add(tiles[row][i].letter);
+				if (validTile(row, i)) check = true;
+			}
+			else if (dir.equals("col")) {
+				file.add(tiles[i][col].letter);
+				if (validTile(i, col)) check = true;
+			}
+		}
+		
+		if (check) {
+			return findWords(letters, file);
+		}
+		else {
+			return new ArrayList<Word>();
+		}
 	}
 	
-	// dictionary of words (see Main.java)
-	public transient HashMap<String, ArrayList<String>> dictionary;
-	
-	// bingo rules
-	private int bingoCount;
-	private int bingoBonus;
-	
-	// the tiles on the board (ie, the state of the game)
-	private Tile[][] tiles;
-	
-	// point values of the letters (changes for different rule sets)
-	private int[] letterValues;
-	
-	// what turn we are on
-	private int turn;
+	// given a bunch of letters, fit them into a series of buckets (with and/or
+	// without existing letters)
+	private ArrayList<Word> findWords(String letters, ArrayList<Character> buckets) {
+		return null;
+	}
 }
