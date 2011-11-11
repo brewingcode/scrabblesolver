@@ -5,8 +5,7 @@ import java.util.ArrayList;
 public class Word implements Comparable<Word> {
 	public String word;
 	public int score;
-	public Tile first;
-	public String orientation;
+	public String where;
 	public ArrayList<String> bonuses;
 	
 	// Comparable
@@ -23,7 +22,7 @@ public class Word implements Comparable<Word> {
 	}
 	
 	public String toString() {
-		String me = String.format("%03d (%02d, %02d) %s %s", score, first.row, first.col, orientation, word.toUpperCase());
+		String me = String.format("%03d %s %s", score, where, word.toUpperCase());
 		if (bonuses.size() > 0) {
 			me += bonuses.toString();
 		}
