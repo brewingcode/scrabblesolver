@@ -132,34 +132,43 @@ public class Board implements Serializable {
 	// 0 if the play is invalid
 	// WARNING: row and col are 1-based indexes NOT 0-based!!!
 	public int play(int row, int col, String word, String dir) {
-		// accumulate our score here
+		return fits(row, col, word, dir) ? score(true) : 0;
+	}
+	
+	// this function does two things:
+	// 1. calculates the score of the current play (based on the "pending" flag on each tile)
+	// 2. if "commit" is true, then:
+	// 		a. clear the old "fresh" tiles from the previous turn
+	// 		b. increment the "turn" counter by 1
+	// 		c. find all the "pending" tiles to score them AND also make them the new "fresh" tiles
+	//      d. print some info to System.out
+	public int score() { return score(false); }
+	public int score(boolean commit) {
+		// accumulator
 		int score = 0;
 		
-		if (fits(row, col, word, dir)) {
-			// to commit this turn, we need to:
-			// 1. clear the old "fresh" tiles from the previous turn
-			// 2. increment the "turn" counter by 1
-			// 3. find all the "pending" tiles to score them AND also make them the new "fresh" tiles
-			
-			// if the bingo threshold is hit with pending letters, they get the bingo bonus
-			int pendingCount = 0; 
+		// if the bingo threshold is hit with pending letters, they get the bingo bonus
+		int pendingCount = 0; 
 
-			// any double/triple word bonuses
-			int wordBonus = 1;
-			
-			for (int i = 0; i < tiles.length; i++) {
-				for (int j = 0; j < tiles.length; j++) {
-					Tile t = tiles[i][j];
-					
-					t.fresh = false;
-					if (t.pending) {
-						pendingCount++;
+		// any double/triple word bonuses
+		int wordBonus = 1;
+		
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles.length; j++) {
+				Tile t = tiles[i][j];
+				
+				if (commit) t.fresh = false;
+				if (t.pending) {
+					pendingCount++;
+					if (commit) {
 						t.fresh = true;
 						t.pending = false;
-						int s = t.letterBonus * letterValues[t.letter - 'a'];
-						score += s;
-						wordBonus *= t.wordBonus;
+					}
+					int s = t.letterBonus * letterValues[t.letter - 'a'];
+					score += s;
+					wordBonus *= t.wordBonus;
 
+					if (commit) {
 						System.out.print(t.letter + ": " + s);
 						if (t.letterBonus > 1) {
 							System.out.print(" (" + t.letterBonus + "x letter)");
@@ -171,15 +180,15 @@ public class Board implements Serializable {
 					}
 				}
 			}
-			
-			turn++;
-			
-			score *= wordBonus;
-			
-			if (pendingCount == bingoCount) {
-				System.out.println("bingo!");
-				score += bingoBonus;
-			}
+		}
+		
+		if (commit) turn++;
+		
+		score *= wordBonus;
+		
+		if (pendingCount == bingoCount) {
+			if (commit) System.out.println("bingo!");
+			score += bingoBonus;
 		}
 		
 		return score;
@@ -267,6 +276,7 @@ public class Board implements Serializable {
 		return true;
 	}
 	
+	// set the "pending" flag on all tiles to false
 	private void clearPending() {
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles.length; j++) {
@@ -308,6 +318,8 @@ public class Board implements Serializable {
 		return true;
 	}
 
+	// given a tile (assumed to be the FIRST tile of a word), this function finds the
+	// connected tiles, and checks that the resulting word is in the dictionary
 	private boolean checkWord(int row, int col, String dir) {
 		ArrayList<Character> letters = new ArrayList<Character>();
 		StringBuilder builder = new StringBuilder();
