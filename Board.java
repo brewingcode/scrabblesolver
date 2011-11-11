@@ -403,7 +403,7 @@ public class Board implements Serializable {
 	}
 	// finds the best place to play a given word, and prints the top <limit> 
 	// candidates to System.out
-	public void findbest(String letters, int limit) {
+	public void findBest(String letters, int limit) {
 		// 1. find all places that are valid (neighboring tile is played)
 		// 2. take the row (or column)
 		// 3. add existing letters to the set of available letters

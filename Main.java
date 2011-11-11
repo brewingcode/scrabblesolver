@@ -93,7 +93,7 @@ public class Main {
 				System.err.println("usage: findbest <word> <limit>");
 			}
 			else {
-				b.findbest(args[3], Integer.parseInt(args[4]));
+				b.findBest(args[3], Integer.parseInt(args[4]));
 			}
 		}
 		else {
