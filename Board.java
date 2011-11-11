@@ -215,6 +215,8 @@ public class Board implements Serializable {
 				break;
 			}
 			
+			//System.err.printf("checking %d,%d\n", row+1, col+1);
+			
 			if (tiles[row][col].letter == Tile.Empty) {
 				tiles[row][col].letter = letters.remove(0);
 				tiles[row][col].pending = true;
@@ -223,7 +225,7 @@ public class Board implements Serializable {
 				letters.remove(0);
 			}
 			else {
-				System.err.println("couldn't play on row " + (row+1) + ", col " + (col+1));
+				System.err.printf("couldn't play on (%d,%d), contains %c\n", row+1, col+1, tiles[row][col].letter);
 				break;
 			}
 			
@@ -277,25 +279,26 @@ public class Board implements Serializable {
 	}
 	
 	// finds all words that are based on pending tiles, and checks that they exist
+	// TODO: checkWord gets called a lot of repeated times, room for optimization
 	private boolean checkWords() {
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles.length; j++) {
 				if (tiles[i][j].pending){
 					// keep going left until we run out of letters, and check that word
 					int col = j;
-					while (col > 0 && tiles[i][col].letter != Tile.Empty) {
+					while (col >= 0 && tiles[i][col].letter != Tile.Empty) {
 						col--;
 					}
-					if (!checkWord(i, col, "right")) {
+					if (!checkWord(i, col+1, "right")) {
 						return false;
 					}
 					
 					// keep going up until we run out of letters, and check that word
 					int row = i;
-					while (row > 0 && tiles[row][j].letter != Tile.Empty) {
+					while (row >= 0 && tiles[row][j].letter != Tile.Empty) {
 						row--;
 					}
-					if (!checkWord(row, j, "down")) {
+					if (!checkWord(row+1, j, "down")) {
 						return false;
 					}
 				}
@@ -308,6 +311,8 @@ public class Board implements Serializable {
 	private boolean checkWord(int row, int col, String dir) {
 		ArrayList<Character> letters = new ArrayList<Character>();
 		StringBuilder builder = new StringBuilder();
+		
+		//System.err.printf("checkWord: %d %d %s\n", row, col, dir);
 		
 		while (true) {
 			if (row < tiles.length && col < tiles.length && tiles[row][col].letter != Tile.Empty) {
