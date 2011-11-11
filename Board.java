@@ -2,6 +2,8 @@ package com.alex.scrabblesolver;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 
 public class Board implements Serializable {
@@ -276,14 +278,91 @@ public class Board implements Serializable {
 	
 	// finds all words that are based on pending tiles, and checks that they exist
 	private boolean checkWords() {
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles.length; j++) {
+				if (tiles[i][j].pending){
+					// keep going left until we run out of letters, and check that word
+					int col = j;
+					while (col > 0 && tiles[i][col].letter != Tile.Empty) {
+						col--;
+					}
+					if (!checkWord(i, col, "right")) {
+						return false;
+					}
+					
+					// keep going up until we run out of letters, and check that word
+					int row = i;
+					while (row > 0 && tiles[row][j].letter != Tile.Empty) {
+						row--;
+					}
+					if (!checkWord(row, j, "down")) {
+						return false;
+					}
+				}
+			}
+		}
+		
 		return true;
 	}
-	
+
+	private boolean checkWord(int row, int col, String dir) {
+		ArrayList<Character> letters = new ArrayList<Character>();
+		StringBuilder builder = new StringBuilder();
+		
+		while (true) {
+			if (row < tiles.length && col < tiles.length && tiles[row][col].letter != Tile.Empty) {
+				letters.add(tiles[row][col].letter);
+				builder.append(tiles[row][col].letter);
+			}
+			else {
+				break;
+			}
+			
+			if (dir.equals("right")) {
+				col++;
+			}
+			else if (dir.equals("down")) {
+				row++;
+			}
+			else {
+				System.err.println("bad dir: " + dir);
+				return false;
+			}
+		}
+
+		// builder has the original word
+		String word = builder.toString();
+		if (word.length() <= 1) {
+			return true;
+		}
+		
+		System.out.println("checkWord: " + word);
+		
+		// now sort the letters in the word, and assemble the key to lookup in the dictionary
+		builder = new StringBuilder();
+		Collections.sort(letters);
+		for (char c : letters) {
+			builder.append(c);
+		}
+		String key = builder.toString();
+		
+		if (dictionary.containsKey(key)) {
+			ArrayList<String> words = dictionary.get(key);
+			if (words.contains(word)) {
+				return true;
+			}
+		}
+		
+		return false;
+		
+	}
 	// finds the best place to play a given word, and prints the top <limit> 
 	// candidates to System.out
 	public void findbest(String word, int limit) {
 		
 	}
+	
+	public transient HashMap<String, ArrayList<String>> dictionary;
 	
 	private int bingoCount;
 	private int bingoBonus;

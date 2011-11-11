@@ -66,6 +66,7 @@ public class Main {
 		System.out.println("loaded " + wordCount + " words into " + words.size() + " keys");
 
 		Board b = loadBoard(boardFile);
+		b.dictionary = words;
 		
 		if (command.equals("print")) {
 			if (args.length < 4) {
