@@ -21,4 +21,12 @@ public class Word implements Comparable<Word> {
 			return 0;
 		}
 	}
+	
+	public String toString() {
+		String me = String.format("%03d (%02d, %02d) %s %s", score, first.row, first.col, orientation, word.toUpperCase());
+		if (bonuses.size() > 0) {
+			me += bonuses.toString();
+		}
+		return me;
+	}
 }

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-
 public class Board implements Serializable {
 	
 	// dictionary of words (see Main.java)
@@ -415,13 +414,21 @@ public class Board implements Serializable {
 		// 6. score remaining words
 		// 7. sort by score and print
 
+		// downcase the incoming letters, and convert them to ArrayList
+		letters = letters.toLowerCase();
+		ArrayList<Character> lettersArray = new ArrayList<Character>();
+		for (Character c : letters.toCharArray()) {
+			lettersArray.add(c);
+		}
+		
+		// the list of Word objects that we will build
 		ArrayList<Word> words = new ArrayList<Word>();
-
+		
 		for (int i = 0; i < tiles.length; i++) {
 			// check row i
-			words.addAll(searchFile(i,0,"row", letters));
+			words.addAll(searchFile(i,0,"row", lettersArray));
 			// check col i
-			words.addAll(searchFile(0,i,"col", letters));
+			words.addAll(searchFile(0,i,"col", lettersArray));
 		}
 		
 		Collections.sort(words);
@@ -431,7 +438,7 @@ public class Board implements Serializable {
 		}
 	}
 	
-	private ArrayList<Word> searchFile(int row, int col, String dir, String letters) {
+	private ArrayList<Word> searchFile(int row, int col, String dir, ArrayList<Character> letters) {
 		// "file" is a row OR a column, after this function we don't care if it's a row or col
 		ArrayList<Character> file = new ArrayList<Character>();
 		boolean check = false;
@@ -457,7 +464,7 @@ public class Board implements Serializable {
 	
 	// given a bunch of letters, fit them into a series of buckets (with and/or
 	// without existing letters)
-	private ArrayList<Word> findWords(String letters, ArrayList<Character> buckets) {
+	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets) {
 		return null;
 	}
 }
