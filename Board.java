@@ -132,7 +132,13 @@ public class Board implements Serializable {
 	// 0 if the play is invalid
 	// WARNING: row and col are 1-based indexes NOT 0-based!!!
 	public int play(int row, int col, String word, String dir) {
-		return fits(row, col, word, dir) ? score(true) : 0;
+		int score = 0;
+		if (fits(row, col, word, dir)) {
+			score = score(true);
+		}
+
+		clearPending();
+		return score;
 	}
 	
 	// this function does two things:
@@ -239,41 +245,44 @@ public class Board implements Serializable {
 			}
 			
 			if (!touchesExisting) {
-				if (row - 1 >= 0 && tiles[row-1][col].letter != Tile.Empty && tiles[row-1][col].pending == false) {
-					touchesExisting = true;
-				}
-				if (row + 1 < tiles.length && tiles[row+1][col].letter != Tile.Empty && tiles[row+1][col].pending == false) {
-					touchesExisting = true;
-				}
-				if (col - 1 >= 0 && tiles[row][col-1].letter != Tile.Empty && tiles[row][col-1].pending == false) {
-					touchesExisting = true;
-				}
-				if (col + 1 < tiles.length && tiles[row][col+1].letter != Tile.Empty && tiles[row][col+1].pending == false) {
-					touchesExisting = true;
-				}
+				touchesExisting = validTile(row, col);
 			}
 		}
 
 		if (!letters.isEmpty()) {
 			System.err.println("couldn't use all letters: " + letters.toString());
-			clearPending();
 			return false;
 		}
 		
 		if (!touchesExisting) {
 			System.err.println("word doesn't touch an existing letter");
-			clearPending();
 			return false;
 		}
 		
 		if (!checkWords()) {
-			System.err.println("one or more invalid words introduced");
-			clearPending();
 			return false;
 		}
 		
 		// at this point, the word is a valid play
 		return true;
+	}
+	
+	// 0-based index, checks to see if the given tile has a neighboring tile that is played
+	private boolean validTile(int row, int col) {
+		if (row - 1 >= 0 && tiles[row-1][col].letter != Tile.Empty && tiles[row-1][col].pending == false) {
+			return true;
+		}
+		if (row + 1 < tiles.length && tiles[row+1][col].letter != Tile.Empty && tiles[row+1][col].pending == false) {
+			return true;
+		}
+		if (col - 1 >= 0 && tiles[row][col-1].letter != Tile.Empty && tiles[row][col-1].pending == false) {
+			return true;
+		}
+		if (col + 1 < tiles.length && tiles[row][col+1].letter != Tile.Empty && tiles[row][col+1].pending == false) {
+			return true;
+		}
+
+		return false;
 	}
 	
 	// set the "pending" flag on all tiles to false
@@ -353,7 +362,7 @@ public class Board implements Serializable {
 			return true;
 		}
 		
-		System.out.println("checkWord: " + word);
+		//System.out.println("checkWord: " + word);
 		
 		// now sort the letters in the word, and assemble the key to lookup in the dictionary
 		builder = new StringBuilder();
@@ -370,6 +379,7 @@ public class Board implements Serializable {
 			}
 		}
 		
+		System.err.printf("'%s' is not a valid word\n", word);
 		return false;
 		
 	}
