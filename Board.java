@@ -136,8 +136,10 @@ public class Board implements Serializable {
 		if (fits(row, col, word, dir)) {
 			score = score(true);
 		}
-
-		clearPending();
+		else {
+			clearPending();
+		}
+		
 		return score;
 	}
 	
@@ -386,7 +388,13 @@ public class Board implements Serializable {
 	// finds the best place to play a given word, and prints the top <limit> 
 	// candidates to System.out
 	public void findbest(String word, int limit) {
-		
+		// 1. find all places that are valid (neighboring tile is played)
+		// 2. take the row (or column)
+		// 3. add existing letters to the set of available letters
+		// 4. get a list of all valid words
+		// 5. pick words that fit in the row/column
+		// 6. score remaining words
+		// 7. sort by score and print
 	}
 	
 	public transient HashMap<String, ArrayList<String>> dictionary;
