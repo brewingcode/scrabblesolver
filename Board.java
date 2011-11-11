@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 public class Board implements Serializable {
 	// constructor
-	
 	public Board(int size) {
 		tiles = new Tile[size][size];
 		for (int row = 0; row < size; row++) {
@@ -136,9 +135,6 @@ public class Board implements Serializable {
 		if (fits(row, col, word, dir)) {
 			score = score(true);
 		}
-		else {
-			clearPending();
-		}
 		
 		return score;
 	}
@@ -253,15 +249,18 @@ public class Board implements Serializable {
 
 		if (!letters.isEmpty()) {
 			System.err.println("couldn't use all letters: " + letters.toString());
+			clearPending();
 			return false;
 		}
 		
 		if (!touchesExisting) {
 			System.err.println("word doesn't touch an existing letter");
+			clearPending();
 			return false;
 		}
 		
 		if (!checkWords()) {
+			clearPending();
 			return false;
 		}
 		
@@ -395,10 +394,27 @@ public class Board implements Serializable {
 		// 5. pick words that fit in the row/column
 		// 6. score remaining words
 		// 7. sort by score and print
+
+		for (int i = 0; i < tiles.length; i++) {
+			if (validTile(i,0)) {
+				// check row i
+				searchFile(i,0,"row");
+			}
+			if (validTile(0,i)) {
+				// check col i
+				searchFile(0,i,"col");
+			}
+		}
 	}
 	
+	private void searchFile(int row, int col, String dir) {
+		
+	}
+	
+	// dictionary of words (see Main.java)
 	public transient HashMap<String, ArrayList<String>> dictionary;
 	
+	// bingo rules
 	private int bingoCount;
 	private int bingoBonus;
 	
