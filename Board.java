@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Board implements Serializable {
 	
@@ -41,7 +42,7 @@ public class Board implements Serializable {
 		turn = 0;
 		bingoCount = -1;
 		bingoBonus = 0;
-		noisy = true;
+		noisy = false;
 		
 		wordsWithFriends();
 	}
@@ -135,7 +136,17 @@ public class Board implements Serializable {
 			for (int row = 0; row < size; row++) {
 				for (int col = 0; col < size; col++) {
 					char c = tiles[row][col].letter;
-					b += tiles[row][col].fresh ? Character.toUpperCase(c) : c; 
+					if (c == Tile.Empty) {
+						if (tiles[row][col].letterBonus > 1 || tiles[row][col].wordBonus > 1) {
+							b += "*";
+						}
+						else {
+							b += Tile.Empty;
+						}
+					}
+					else {
+						b += tiles[row][col].fresh ? Character.toUpperCase(c) : c;
+					}
 					if (col == size - 1) {
 						b += "\n";
 					}
@@ -170,7 +181,6 @@ public class Board implements Serializable {
 	// 		a. clear the old "fresh" tiles from the previous turn
 	// 		b. increment the "turn" counter by 1
 	// 		c. find all the "pending" tiles to score them AND also make them the new "fresh" tiles
-	//      d. print some info to System.out
 	// 3. if "word" is non-null, then:
 	//   	a. assign the score to it
 	//      b. assign the bonuses that were hit
@@ -201,7 +211,7 @@ public class Board implements Serializable {
 
 					if (word != null) word.addBonuses(t.wordBonus, t.letterBonus);
 					
-					if (commit) {
+					if (noisy) {
 						System.out.print(t.letter + ": " + s);
 						if (t.letterBonus > 1) {
 							System.out.print(" (" + t.letterBonus + "x letter)");
@@ -220,7 +230,7 @@ public class Board implements Serializable {
 		score *= wordBonus;
 		
 		if (pendingCount == bingoCount) {
-			if (commit) System.out.println("bingo!");
+			if (noisy) System.out.println("bingo!");
 			score += bingoBonus;
 		}
 		
@@ -231,11 +241,10 @@ public class Board implements Serializable {
 
 	// WARNING: startRow and startCol are 1-based indexes not 0-based!!!
 	private boolean fits(int startRow, int startCol, String word, String dir) {
+		//System.err.printf("fits: %d,%d %s %s\n", startRow, startCol, dir, word);
 		// break the word into its characters
-		ArrayList<Character> letters = new ArrayList<Character>();
-		for (char c : word.toCharArray()) {
-			letters.add(c);
-		}
+		ArrayList<Character> letters = toArray(word);
+		
 		
 		// as we're placing letters, we'll also check that we touch an existing letter
 		boolean touchesExisting = false;
@@ -245,7 +254,7 @@ public class Board implements Serializable {
 			// to be the center tile
 			touchesExisting = true;
 		}
-		
+
 		for (int i = 0; i < word.length(); i++) {
 			int row = startRow - 1 + (dir.equals("col") ? i : 0);
 			int col = startCol - 1 + (dir.equals("row") ? i : 0);
@@ -296,6 +305,7 @@ public class Board implements Serializable {
 		}
 		
 		// at this point, the word is a valid play
+		//System.err.println("true");	
 		return true;
 	}
 	
@@ -314,6 +324,7 @@ public class Board implements Serializable {
 			return true;
 		}
 
+		//System.err.printf("validTile: %d,%d: false\n", row, col);
 		return false;
 	}
 	
@@ -426,23 +437,25 @@ public class Board implements Serializable {
 		// 6. score remaining words
 		// 7. sort by score and print
 
-		// downcase the incoming letters, and convert them to ArrayList
+		// downcase the incoming letters
 		letters = letters.toLowerCase();
-		ArrayList<Character> lettersArray = new ArrayList<Character>();
-		for (Character c : letters.toCharArray()) {
-			lettersArray.add(c);
-		}
-		
-		noisy = false;
 		
 		// the list of Word objects that we will build
-		ArrayList<Word> words = new ArrayList<Word>();
+		HashSet<Word> wordsHash = new HashSet<Word>();
+		
 		for (int i = 0; i < tiles.length; i++) {
 			// check row i
-			words.addAll(searchFile(i,0,"row", lettersArray));
+			for (Word w : searchFile(i,0,"row", letters)) {
+				wordsHash.add(w);
+			}
 			// check col i
-			words.addAll(searchFile(0,i,"col", lettersArray));
+			for (Word w : searchFile(0,i,"col", letters)) {
+				wordsHash.add(w);
+			}
 		}
+		
+		ArrayList<Word> words = new ArrayList<Word>();
+		words.addAll(wordsHash);
 		
 		Collections.sort(words);
 		
@@ -455,7 +468,7 @@ public class Board implements Serializable {
 		}
 	}
 	
-	private ArrayList<Word> searchFile(int row, int col, String dir, ArrayList<Character> letters) {
+	private ArrayList<Word> searchFile(int row, int col, String dir, String letters) {
 		//System.err.printf("searchFile: %d,%d\n", row, col);
 		ArrayList<Word> words = new ArrayList<Word>();
 		ArrayList<Character> rowLetters = new ArrayList<Character>();
@@ -487,29 +500,68 @@ public class Board implements Serializable {
 	
 	// given a bunch of letters, fit them into a series of buckets (with and/or
 	// without existing letters)
-	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets, String dir, int index) {
-		//System.err.printf("findWords: %s %s %d\n", letters.toString(), dir, index);
+	private ArrayList<Word> findWords(String letters, ArrayList<Character> buckets, String dir, int index) {
+		//System.err.printf("findWords: %s %d\n", dir, index);
 		ArrayList<Word> words = new ArrayList<Word>();
+
+		ArrayList<Character> lettersArray = toArray(letters);
 
 		for (char c : buckets) {
 			if (c != Tile.Empty) {
-				letters.add(c);
+				lettersArray.add(c);
 			}
 		}
 		
-		for (String word : allKnownWords(letters)) {
+		//System.err.printf("findWords: %s in %s\n", lettersArray.toString(), buckets.toString());
+		
+		for (String word : allKnownWords(lettersArray)) {
 			for (int i = 0; i < tiles.length; i++) {
-				if (fits(index, i, word, dir)) {
-					Word w = new Word();
-					w.word = word;
-					w.where = String.format("%s %2d", dir, index);
-					score(false, w);
-					words.add(w);
+				if (linesUp(word, letters, buckets, i)) {
+					int row = dir.equals("row") ? index : i;
+					int col = dir.equals("row") ? i : index;
+					if (fits(row+1, col+1, word, dir)) {
+						Word w = new Word();
+						w.word = word;
+						w.where = String.format("%s %d,%d", dir, row+1, col+1);
+						score(false, w);
+						if (w.score > 0) words.add(w);
+					}
 				}
 			}
 		}
 		
 		return words;
+	}
+	
+	// given a word and a location, checks that the letters in 'word' 
+	// match up with the letters already on the board
+	private boolean linesUp(String word, String available, ArrayList<Character> buckets, int i) {
+		//System.err.printf("linesUp: %s %s %s[%d]\n", word, available, buckets, i);
+		ArrayList<Character> letters = toArray(word);
+		ArrayList<Character> avail = toArray(available);
+		
+		for (Character c : letters) {
+			if (i >= tiles.length) break;
+			
+			if (buckets.get(i) == Tile.Empty) {
+				if (avail.remove(c)) {
+					// good
+					i++;
+				}
+				else {
+					return false;
+				}
+			}
+			else if (c == buckets.get(i)) {
+				i++;
+			}
+			else {
+				break;
+			}
+		}					
+		
+		//System.err.println(avail.size() == 0 ? "true" : "false");
+		return avail.size() == 0;
 	}
 	
 	// given a bunch of letters, return all the words that can be created with them
@@ -537,7 +589,14 @@ public class Board implements Serializable {
 				words.addAll(dictionary.get(key));
 			}
 		}
-		
+
+		//System.err.println("allKnownWords: " + words);
 		return words;
+	}
+	
+	private ArrayList<Character> toArray(String s) {
+		ArrayList<Character> a = new ArrayList<Character>(s.length());
+		for (char c : s.toCharArray()) a.add(c);
+		return a;
 	}
 }

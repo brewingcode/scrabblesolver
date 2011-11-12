@@ -24,7 +24,7 @@ public class Word implements Comparable<Word> {
 			return 0;
 		}
 	}
-	
+
 	public String toString() {
 		String me = String.format("%3d  %s  %s", score, where, word.toUpperCase());
 		if (bonuses.size() > 0) {
