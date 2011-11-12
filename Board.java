@@ -152,7 +152,7 @@ public class Board implements Serializable {
 	public int play(int row, int col, String word, String dir) {
 		int score = 0;
 		if (fits(row, col, word, dir)) {
-			score = score(true);
+			score = score(true, null);
 		}
 		
 		return score;
@@ -165,8 +165,10 @@ public class Board implements Serializable {
 	// 		b. increment the "turn" counter by 1
 	// 		c. find all the "pending" tiles to score them AND also make them the new "fresh" tiles
 	//      d. print some info to System.out
-	public int score() { return score(false); }
-	public int score(boolean commit) {
+	// 3. if "word" is non-null, then:
+	//   	a. assign the score to it
+	//      b. assign the bonuses that were hit
+	private int score(boolean commit, Word word) {
 		// accumulator
 		int score = 0;
 		
@@ -191,6 +193,8 @@ public class Board implements Serializable {
 					score += s;
 					wordBonus *= t.wordBonus;
 
+					if (word != null) word.addBonuses(t.wordBonus, t.letterBonus);
+					
 					if (commit) {
 						System.out.print(t.letter + ": " + s);
 						if (t.letterBonus > 1) {
@@ -214,11 +218,13 @@ public class Board implements Serializable {
 			score += bingoBonus;
 		}
 		
+		if (word != null) word.score = score;
+		
 		return score;
 	}
 
 	// WARNING: startRow and startCol are 1-based indexes not 0-based!!!
-	public boolean fits(int startRow, int startCol, String word, String dir) {
+	private boolean fits(int startRow, int startCol, String word, String dir) {
 		// break the word into its characters
 		ArrayList<Character> letters = new ArrayList<Character>();
 		for (char c : word.toCharArray()) {
@@ -235,8 +241,8 @@ public class Board implements Serializable {
 		}
 		
 		for (int i = 0; i < word.length(); i++) {
-			int row = startRow - 1 + (dir.equals("down") ? i : 0);
-			int col = startCol - 1 + (dir.equals("right") ? i : 0);
+			int row = startRow - 1 + (dir.equals("col") ? i : 0);
+			int col = startCol - 1 + (dir.equals("row") ? i : 0);
 
 			if (row < 0 || row >= tiles.length) {
 				System.err.println("row is out of bounds: " + (row + 1));
@@ -328,7 +334,7 @@ public class Board implements Serializable {
 					while (col >= 0 && tiles[i][col].letter != Tile.Empty) {
 						col--;
 					}
-					if (!checkWord(i, col+1, "right")) {
+					if (!checkWord(i, col+1, "row")) {
 						return false;
 					}
 					
@@ -337,7 +343,7 @@ public class Board implements Serializable {
 					while (row >= 0 && tiles[row][j].letter != Tile.Empty) {
 						row--;
 					}
-					if (!checkWord(row+1, j, "down")) {
+					if (!checkWord(row+1, j, "col")) {
 						return false;
 					}
 				}
@@ -364,10 +370,10 @@ public class Board implements Serializable {
 				break;
 			}
 			
-			if (dir.equals("right")) {
+			if (dir.equals("row")) {
 				col++;
 			}
-			else if (dir.equals("down")) {
+			else if (dir.equals("col")) {
 				row++;
 			}
 			else {
@@ -434,6 +440,10 @@ public class Board implements Serializable {
 		
 		for (Word w : words) {
 			System.out.println(w);
+			if (limit > 0) {
+				limit--;
+				if (limit == 0) break;
+			}
 		}
 	}
 	
@@ -456,11 +466,11 @@ public class Board implements Serializable {
 		}
 		
 		if (checkRow) {
-			words.addAll(findWords(letters, rowLetters, String.format("row %02d", row)));
+			words.addAll(findWords(letters, rowLetters, "row", row));
 		}
 		
 		if (checkCol) {
-			words.addAll(findWords(letters, colLetters, String.format("col %02d", col)));
+			words.addAll(findWords(letters, colLetters, "col", col));
 		}
 		
 		return words;
@@ -468,27 +478,56 @@ public class Board implements Serializable {
 	
 	// given a bunch of letters, fit them into a series of buckets (with and/or
 	// without existing letters)
-	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets, String where) {
+	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets, String dir, int index) {
+		ArrayList<Word> words = new ArrayList<Word>();
+		
 		for (char c : buckets) {
 			if (c != Tile.Empty) {
 				letters.add(c);
 			}
 		}
 		
-		Collections.sort(letters);
-		
 		for (String word : allKnownWords(letters)) {
-			
+			for (int i = 0; i < tiles.length; i++) {
+				if (dir.equals("row")) {
+					if (fits(index, i, word, "row")) {
+						Word w = new Word();
+						w.word = word;
+						w.where = String.format("row %2d", index);
+						score(false, w);
+						words.add(w);
+					}
+				}
+			}
 		}
 		
-		return null;
+		return words;
 	}
 	
-	// given a bunch of sorted letters, return all the words that can be created with them
+	// given a bunch of letters, return all the words that can be created with them
 	// 1. our dictionary has keys of sorted strings
-	// 2. is our sorted letter string in the dict? 
-	// 3. 
+	// 2. for each of those keys, check if the letters in the key are in 'letters'
 	private ArrayList<String> allKnownWords(ArrayList<Character> letters) {
-		return null;
+		ArrayList<String> words = new ArrayList<String>();
+		
+		for (String key : dictionary.keySet()) {
+			ArrayList<Character> set = (ArrayList<Character>) letters.clone();
+			boolean hit = true;
+			for (char c : key.toCharArray()) {
+				if (set.contains(c)) {
+					set.remove(c);
+				}
+				else {
+					hit = false;
+					break;
+				}
+			}
+			
+			if (hit) {
+				words.addAll(dictionary.get(key));
+			}
+		}
+		
+		return words;
 	}
 }
