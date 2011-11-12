@@ -98,6 +98,7 @@ public class Main {
 			if (args.length < 5) {
 				System.err.println("usage: find <letters> <limit>");
 			} else {
+				b.print("letters");
 				b.findBest(args[3], Integer.parseInt(args[4]));
 			}
 		} else {
