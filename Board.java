@@ -23,6 +23,11 @@ public class Board implements Serializable {
 	// what turn we are on
 	private int turn;
 	
+	// be noisy on stderr
+	// (Some functions have commented out tracing on System.err, these were 
+	// development-time tracing for debugging)
+	private transient boolean noisy;
+	
 	// constructor
 	public Board(int size) {
 		tiles = new Tile[size][size];
@@ -36,6 +41,7 @@ public class Board implements Serializable {
 		turn = 0;
 		bingoCount = -1;
 		bingoBonus = 0;
+		noisy = true;
 		
 		wordsWithFriends();
 	}
@@ -140,7 +146,7 @@ public class Board implements Serializable {
 			}
 		}
 		else {
-			System.err.println("unknown 'which': " + which + " (try 'bonuses' or 'letters')");
+			if (noisy) System.out.printf("unknown 'which': %s (try 'bonuses' or 'letters')\n", which);
 		}
 		
 		return b;
@@ -245,11 +251,11 @@ public class Board implements Serializable {
 			int col = startCol - 1 + (dir.equals("row") ? i : 0);
 
 			if (row < 0 || row >= tiles.length) {
-				System.err.println("row is out of bounds: " + (row + 1));
+				if (noisy) System.out.println("row is out of bounds: " + (row + 1));
 				break;
 			}
 			if (col < 0 || col >= tiles.length) {
-				System.err.println("column is out of bounds: " + (col + 1));
+				if (noisy) System.out.println("column is out of bounds: " + (col + 1));
 				break;
 			}
 			
@@ -263,7 +269,7 @@ public class Board implements Serializable {
 				letters.remove(0);
 			}
 			else {
-				System.err.printf("couldn't play on (%d,%d), contains %c\n", row+1, col+1, tiles[row][col].letter);
+				if (noisy) System.out.printf("couldn't play on (%d,%d), contains %c\n", row+1, col+1, tiles[row][col].letter);
 				break;
 			}
 			
@@ -273,13 +279,13 @@ public class Board implements Serializable {
 		}
 
 		if (!letters.isEmpty()) {
-			System.err.println("couldn't use all letters: " + letters.toString());
+			if (noisy) System.out.println("couldn't use all letters: " + letters.toString());
 			clearPending();
 			return false;
 		}
 		
 		if (!touchesExisting) {
-			System.err.println("word doesn't touch an existing letter");
+			if (noisy) System.out.println("word doesn't touch an existing letter");
 			clearPending();
 			return false;
 		}
@@ -377,7 +383,7 @@ public class Board implements Serializable {
 				row++;
 			}
 			else {
-				System.err.println("bad dir: " + dir);
+				if (noisy) System.out.println("bad dir: " + dir);
 				return false;
 			}
 		}
@@ -405,7 +411,7 @@ public class Board implements Serializable {
 			}
 		}
 		
-		System.err.printf("'%s' is not a valid word\n", word);
+		if (noisy) System.out.printf("'%s' is not a valid word\n", word);
 		return false;
 		
 	}
@@ -426,6 +432,8 @@ public class Board implements Serializable {
 		for (Character c : letters.toCharArray()) {
 			lettersArray.add(c);
 		}
+		
+		noisy = false;
 		
 		// the list of Word objects that we will build
 		ArrayList<Word> words = new ArrayList<Word>();
@@ -491,14 +499,12 @@ public class Board implements Serializable {
 		
 		for (String word : allKnownWords(letters)) {
 			for (int i = 0; i < tiles.length; i++) {
-				if (dir.equals("row")) {
-					if (fits(index, i, word, "row")) {
-						Word w = new Word();
-						w.word = word;
-						w.where = String.format("row %2d", index);
-						score(false, w);
-						words.add(w);
-					}
+				if (fits(index, i, word, dir)) {
+					Word w = new Word();
+					w.word = word;
+					w.where = String.format("%s %2d", dir, index);
+					score(false, w);
+					words.add(w);
 				}
 			}
 		}
