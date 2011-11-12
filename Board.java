@@ -448,6 +448,7 @@ public class Board implements Serializable {
 	}
 	
 	private ArrayList<Word> searchFile(int row, int col, String dir, ArrayList<Character> letters) {
+		//System.err.printf("searchFile: %d,%d\n", row, col);
 		ArrayList<Word> words = new ArrayList<Word>();
 		ArrayList<Character> rowLetters = new ArrayList<Character>();
 		ArrayList<Character> colLetters = new ArrayList<Character>();
@@ -479,8 +480,9 @@ public class Board implements Serializable {
 	// given a bunch of letters, fit them into a series of buckets (with and/or
 	// without existing letters)
 	private ArrayList<Word> findWords(ArrayList<Character> letters, ArrayList<Character> buckets, String dir, int index) {
+		//System.err.printf("findWords: %s %s %d\n", letters.toString(), dir, index);
 		ArrayList<Word> words = new ArrayList<Word>();
-		
+
 		for (char c : buckets) {
 			if (c != Tile.Empty) {
 				letters.add(c);
@@ -508,14 +510,16 @@ public class Board implements Serializable {
 	// 1. our dictionary has keys of sorted strings
 	// 2. for each of those keys, check if the letters in the key are in 'letters'
 	private ArrayList<String> allKnownWords(ArrayList<Character> letters) {
+		//System.err.printf("allKnownWords: %s\n", letters.toString());
 		ArrayList<String> words = new ArrayList<String>();
 		
 		for (String key : dictionary.keySet()) {
 			ArrayList<Character> set = (ArrayList<Character>) letters.clone();
 			boolean hit = true;
 			for (char c : key.toCharArray()) {
-				if (set.contains(c)) {
-					set.remove(c);
+				int i = set.indexOf(c);
+				if (i >= 0) {
+					set.remove(i);
 				}
 				else {
 					hit = false;
