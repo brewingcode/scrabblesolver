@@ -28,4 +28,15 @@ public class Word implements Comparable<Word> {
 		}
 		return me;
 	}
+	
+	public void addBonuses(int wordBonus, int letterBonus) {
+		if (bonuses == null) {
+			bonuses = new ArrayList<String>();
+		}
+		
+		if (wordBonus == 2) bonuses.add("DW");
+		if (wordBonus == 3) bonuses.add("TW");
+		if (letterBonus == 2) bonuses.add("DL");
+		if (letterBonus == 3) bonuses.add("TL");
+	}
 }
