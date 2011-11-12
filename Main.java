@@ -23,8 +23,7 @@ public class Main {
 			IOException {
 
 		if (args.length < 3) {
-			System.err
-					.println("usage: java Main <dictionary file> <board file> [command]");
+			System.err.println("usage: java Main <dictionary file> <board file> [command]");
 			System.err.println("valid commands: print play findbest");
 			System.exit(1);
 		}
