@@ -2,7 +2,6 @@ package com.alex.scrabblesolver;
 
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -265,21 +264,29 @@ public class Board implements Serializable {
 		//System.err.printf("scoreWord: %d,%d %s %s\n", tiles.get(0).row, tiles.get(0).col, tiles, orientation);
 		
 		for (Tile t : tiles) {
-			if (t.pending) counts = true;
-
-			wordBonus *= t.wordBonus;
-
-			thisWord.addBonuses(t.wordBonus, t.letterBonus);
-			
-			thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
-
 			thisWord.word += t.letter;
+			
+			if (t.pending)  {
+				// this word counts
+				counts = true;
 
-			if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
+				// we count bonuses
+				wordBonus *= t.wordBonus;
+				thisWord.addBonuses(t.wordBonus, t.letterBonus);
+				if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
+				
+				// bump our score
+				thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
+			}
+			else {
+				// if the tile isn't pending, it's just worth the value of the letter, 
+				// no bonuses
+				thisWord.score += letterValues[t.letter - 'a'];
+			}
 		}
 
-		thisWord.score *= wordBonus;
-		
+		if (counts)	thisWord.score *= wordBonus;
+
 		if (counts && w != null && !thisWord.equals(w.word)) {
 			w.attached.add(thisWord);
 		}
@@ -707,6 +714,7 @@ public class Board implements Serializable {
 			}
 			else {
 				clearPending();
+				turn++;
 				success = true;
 			}
 			
