@@ -178,6 +178,7 @@ public class Board implements Serializable {
 		if (fits(row, col, word, dir)) {
 			score = score(true, null);
 		}
+		clearPending();
 		
 		return score;
 	}
@@ -245,7 +246,7 @@ public class Board implements Serializable {
 			clearPending();
 		}
 
-		word.score = score;
+		if (word != null) word.score = score;
 		return score;
 	}
 
@@ -335,18 +336,15 @@ public class Board implements Serializable {
 
 		if (!letters.isEmpty()) {
 			if (noisy) System.out.println("couldn't use all letters: " + letters.toString());
-			clearPending();
 			return false;
 		}
 		
 		if (!touchesExisting) {
 			if (noisy) System.out.println("word doesn't touch an existing letter");
-			clearPending();
 			return false;
 		}
 		
 		if (!checkWords()) {
-			clearPending();
 			return false;
 		}
 		
@@ -379,7 +377,7 @@ public class Board implements Serializable {
 	private void clearPending() {
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles.length; j++) {
-				if (tiles[i][j].pending){
+				if (tiles[i][j].pending && !tiles[i][j].fresh) {
 					tiles[i][j].letter = Tile.Empty;
 				}
 				tiles[i][j].pending = false;
@@ -577,6 +575,7 @@ public class Board implements Serializable {
 							words.add(w);
 						}
 					}
+					clearPending();
 				}
 			}
 		}
