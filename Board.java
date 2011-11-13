@@ -88,6 +88,7 @@ public class Board implements Serializable {
 		return tiles[row][col];
 	}
 	
+	// "letters" or "bonuses", defaults to "letters"
 	public void print(String which) {
 		if (which == null) {
 			which = "letters";
@@ -95,10 +96,12 @@ public class Board implements Serializable {
 		System.out.print(toString(which));
 	}
 	
+	
 	public String toString() {
 		return toString("letters");
 	}
-	
+
+	// dumping method
 	private String toString(String which) {
 		String b = "";
 		int size = tiles.length;
@@ -180,10 +183,11 @@ public class Board implements Serializable {
 	// 2. if "commit" is true, then:
 	// 		a. clear the old "fresh" tiles from the previous turn
 	// 		b. increment the "turn" counter by 1
-	// 		c. find all the "pending" tiles to score them AND also make them the new "fresh" tiles
+	// 		c. clear all "pending" flags
 	// 3. if "word" is non-null, then:
 	//   	a. assign the score to it
 	//      b. assign the bonuses that were hit
+	//      c. assign any secondary words that are created by 'word'
 	private int score(boolean commit, Word word) {
 		// accumulator
 		int score = 0;
@@ -191,60 +195,98 @@ public class Board implements Serializable {
 		// if the bingo threshold is hit with pending letters, they get the bingo bonus
 		int pendingCount = 0; 
 
-		// any double/triple word bonuses
-		int wordBonus = 1;
+		// buffers
+		ArrayList<Tile> rowBuffer = new ArrayList<Tile>();
+		ArrayList<Tile> colBuffer = new ArrayList<Tile>();
 		
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles.length; j++) {
-				Tile t = tiles[i][j];
+				// buffer up row i
+				if (tiles[i][j].letter == Tile.Empty) {
+					score += scoreWord(rowBuffer, word, i, j, "row");
+					rowBuffer.clear();
+				}
+				else {
+					rowBuffer.add(tiles[i][j]);
+				}
 				
-				if (commit) t.fresh = false;
-				if (t.pending) {
-					pendingCount++;
-					if (commit) {
-						t.fresh = true;
-						t.pending = false;
-					}
-					int s = t.letterBonus * letterValues[t.letter - 'a'];
-					score += s;
-					wordBonus *= t.wordBonus;
-
-					if (word != null) word.addBonuses(t.wordBonus, t.letterBonus);
-					
-					if (noisy) {
-						System.out.print(t.letter + ": " + s);
-						if (t.letterBonus > 1) {
-							System.out.print(" (" + t.letterBonus + "x letter)");
-						}
-						if (t.wordBonus > 1) {
-							System.out.print(" (" + t.wordBonus + "x word)");
-						}
-						System.out.print("\n");
-					}
+				// buffer up column i
+				if (tiles[j][i].letter == Tile.Empty){
+					score += scoreWord(colBuffer, word, j, i, "col");
+					colBuffer.clear();
+				}
+				else {
+					colBuffer.add(tiles[j][i]);
+				}
+				
+				// count pending
+				if (tiles[i][j].pending) pendingCount++;
+				
+				// update state?
+				if (commit) {
+					// "pending" will have to wait until the end of this function, since
+					// scoreWord will use it
+					tiles[i][j].fresh = tiles[i][j].pending ? true : false;
 				}
 			}
 		}
 		
-		if (commit) turn++;
-		
-		score *= wordBonus;
-		
 		if (pendingCount == bingoCount) {
-			if (noisy) System.out.println("bingo!");
+			if (noisy) System.out.println("Bingo!");
 			score += bingoBonus;
 		}
 		
-		if (word != null) word.score = score;
-		
+		if (commit) { 
+			turn++;
+			clearPending();
+		}
+
+		word.score = score;
 		return score;
 	}
 
+	// 0-based indexes on 'row' and 'col'
+	// This method does the scoring work, it operates on a buffer of Tile objects
+	private int scoreWord(ArrayList<Tile> tiles, Word w, int row, int col, String orientation) {
+		if (tiles.size() <= 1) return 0;
+		
+		int wordBonus = 1;
+		boolean counts = false;
+		Word thisWord = new Word("", row, col, orientation);
+		
+		for (Tile t : tiles) {
+			if (t.pending) counts = true;
+			
+			wordBonus *= t.wordBonus;
+
+			thisWord.addBonuses(t.wordBonus, t.letterBonus);
+			
+			thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
+
+			thisWord.word += t.letter;
+
+			if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
+		}
+
+		thisWord.score *= wordBonus;
+		
+		if (counts && w != null && !thisWord.equals(w.word)) {
+			w.attached.add(thisWord);
+		}
+		
+		//if (counts) System.err.printf("scoreWord: %d,%d %s %s %s\n", row, col, thisWord.word, orientation, ( counts ? "true" : "false"));
+		return counts ? thisWord.score : 0;
+	}
+	
 	// WARNING: startRow and startCol are 1-based indexes not 0-based!!!
+	// checks that the given word is a valid play at startRow,startCol in the direction dir
+	// - geometry (fits on the board)
+	// - touches existing played tile
+	// - all words are found in the dictionary
 	private boolean fits(int startRow, int startCol, String word, String dir) {
 		//System.err.printf("fits: %d,%d %s %s\n", startRow, startCol, dir, word);
 		// break the word into its characters
 		ArrayList<Character> letters = toArray(word);
-		
 		
 		// as we're placing letters, we'll also check that we touch an existing letter
 		boolean touchesExisting = false;
@@ -309,7 +351,8 @@ public class Board implements Serializable {
 		return true;
 	}
 	
-	// 0-based index, checks to see if the given tile has a neighboring tile that is played
+	// 0-based indexes
+	// checks to see if the given tile has a neighboring tile that is played
 	private boolean validTile(int row, int col) {
 		if (row - 1 >= 0 && tiles[row-1][col].letter != Tile.Empty && tiles[row-1][col].pending == false) {
 			return true;
@@ -426,6 +469,7 @@ public class Board implements Serializable {
 		return false;
 		
 	}
+	
 	// finds the best place to play a given word, and prints the top <limit> 
 	// candidates to System.out
 	public void findBest(String letters, int limit) {
@@ -433,14 +477,15 @@ public class Board implements Serializable {
 		// 2. take the row (or column)
 		// 3. add existing letters to the set of available letters
 		// 4. get a list of all valid words
-		// 5. pick words that fit in the row/column
+		// 5. pick words that fit in the row/column, given the existing letters
 		// 6. score remaining words
 		// 7. sort by score and print
 
 		// downcase the incoming letters
 		letters = letters.toLowerCase();
 		
-		// the list of Word objects that we will build
+		// the hash of Word objects that we will build, the hash will
+		// cut out duplicates
 		HashSet<Word> wordsHash = new HashSet<Word>();
 		
 		for (int i = 0; i < tiles.length; i++) {
@@ -453,12 +498,13 @@ public class Board implements Serializable {
 				wordsHash.add(w);
 			}
 		}
-		
+
+		// convert the hash to a list so we can sort
 		ArrayList<Word> words = new ArrayList<Word>();
 		words.addAll(wordsHash);
-		
 		Collections.sort(words);
 		
+		// and print what we found!
 		for (Word w : words) {
 			System.out.println(w);
 			if (limit > 0) {
@@ -467,7 +513,8 @@ public class Board implements Serializable {
 			}
 		}
 	}
-	
+
+	// given a row OR a column, search and score all valid words
 	private ArrayList<Word> searchFile(int row, int col, String dir, String letters) {
 		//System.err.printf("searchFile: %d,%d\n", row, col);
 		ArrayList<Word> words = new ArrayList<Word>();
@@ -520,11 +567,11 @@ public class Board implements Serializable {
 					int row = dir.equals("row") ? index : i;
 					int col = dir.equals("row") ? i : index;
 					if (fits(row+1, col+1, word, dir)) {
-						Word w = new Word();
-						w.word = word;
-						w.where = String.format("%s %d,%d", dir, row+1, col+1);
-						score(false, w);
-						if (w.score > 0) words.add(w);
+						Word w = new Word(word, row, col, dir);
+						if (score(false, w) > 0) {
+							w.where = String.format("%s %d,%d", dir, row+1, col+1);
+							words.add(w);
+						}
 					}
 				}
 			}
@@ -594,6 +641,7 @@ public class Board implements Serializable {
 		return words;
 	}
 	
+	// wow there's no built-in method for converting char[] to ArrayList<Character>? fail
 	private ArrayList<Character> toArray(String s) {
 		ArrayList<Character> a = new ArrayList<Character>(s.length());
 		for (char c : s.toCharArray()) a.add(c);
