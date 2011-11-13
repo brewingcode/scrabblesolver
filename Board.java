@@ -1,5 +1,9 @@
 package com.alex.scrabblesolver;
 
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -646,5 +650,50 @@ public class Board implements Serializable {
 		ArrayList<Character> a = new ArrayList<Character>(s.length());
 		for (char c : s.toCharArray()) a.add(c);
 		return a;
+	}
+
+	// load the board with the state in the file "fileName", it should be equivalent
+	// to the output of Board::print("letters")
+	public boolean load(String fileName) {
+		FileInputStream fis = null;
+
+		try {
+			fis = new FileInputStream(fileName);
+			Reader r = new InputStreamReader(fis, "UTF-8");
+			
+			int intch;
+			int row = 0;
+			int col = 0;
+			
+			while ((intch = r.read()) != -1) {
+				Character ch = (char) intch;
+				if (ch >= 'a' || ch <= 'z' || ch >= 'A' || ch <= 'Z') {
+					if (col >= tiles.length) {
+						row++;
+						col = 0;
+					}
+					
+					tiles[row][col].letter = ch;
+				}
+				else if (ch == '\n') {
+					if (col != tiles.length - 1) {
+						System.err.printf("unexpected newline in input file at coord %d,%d\n", row, col);
+					}
+				}
+				else {
+					// just skip everything else
+				}
+			}
+			
+			if (row != tiles.length - 1 || col != tiles.length) {
+				System.err.printf("didn't get enough tiles! only got to %d,%d", row, col);
+			}
+			
+			fis.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	
+		return true;
 	}
 }
