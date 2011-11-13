@@ -30,4 +30,8 @@ public class Tile implements Serializable {
 	
 	// used for undoing and indicating previous move
 	public boolean fresh;
+	
+	public String toString() {
+		return String.format("[%s]", letter);
+	}
 }
