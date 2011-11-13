@@ -24,7 +24,7 @@ public class Main {
 
 		if (args.length < 3) {
 			System.err.println("usage: java Main <dictionary file> <board file> [command]");
-			System.err.println("valid commands: print play findbest");
+			System.err.println("valid commands: print play find load");
 			System.exit(1);
 		}
 
