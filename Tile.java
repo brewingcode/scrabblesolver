@@ -12,8 +12,8 @@ public class Tile implements Serializable {
 		letter = Empty;
 		letterBonus = 1;
 		wordBonus = 1;
-		fresh = false;
 		pending = false;
+		fresh = false;
 	}
 	
 	// "row" and "col" are 0-index
@@ -28,6 +28,6 @@ public class Tile implements Serializable {
 	// used for attempting word placement
 	public boolean pending;
 	
-	// used for undoing 
+	// used for undoing and indicated previous move
 	public boolean fresh;
 }
