@@ -208,7 +208,7 @@ public class Board implements Serializable {
 			for (int j = 0; j < tiles.length; j++) {
 				// buffer up row i
 				if (tiles[i][j].letter == Tile.Empty) {
-					score += scoreWord(rowBuffer, word, i, j, "row");
+					score += scoreWord(rowBuffer, word, "row");
 					rowBuffer.clear();
 				}
 				else {
@@ -217,7 +217,7 @@ public class Board implements Serializable {
 				
 				// buffer up column i
 				if (tiles[j][i].letter == Tile.Empty){
-					score += scoreWord(colBuffer, word, j, i, "col");
+					score += scoreWord(colBuffer, word, "col");
 					colBuffer.clear();
 				}
 				else {
@@ -236,6 +236,9 @@ public class Board implements Serializable {
 			}
 		}
 		
+		score += scoreWord(rowBuffer, word, "row");
+		score += scoreWord(colBuffer, word, "col");
+		
 		if (pendingCount == bingoCount) {
 			if (noisy) System.out.println("Bingo!");
 			score += bingoBonus;
@@ -252,16 +255,18 @@ public class Board implements Serializable {
 
 	// 0-based indexes on 'row' and 'col'
 	// This method does the scoring work, it operates on a buffer of Tile objects
-	private int scoreWord(ArrayList<Tile> tiles, Word w, int row, int col, String orientation) {
+	private int scoreWord(ArrayList<Tile> tiles, Word w, String orientation) {
 		if (tiles.size() <= 1) return 0;
 		
 		int wordBonus = 1;
 		boolean counts = false;
-		Word thisWord = new Word("", row, col, orientation);
+		Word thisWord = new Word("", tiles.get(0).row, tiles.get(0).col, orientation);
+		
+		//System.err.printf("scoreWord: %d,%d %s %s\n", tiles.get(0).row, tiles.get(0).col, tiles, orientation);
 		
 		for (Tile t : tiles) {
 			if (t.pending) counts = true;
-			
+
 			wordBonus *= t.wordBonus;
 
 			thisWord.addBonuses(t.wordBonus, t.letterBonus);
@@ -674,8 +679,13 @@ public class Board implements Serializable {
 					col = 0;
 				}
 				
-				if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+				if (ch >= 'a' && ch <= 'z') {
 					tiles[row][col].letter = ch;
+					col++;
+				}
+				else if (ch >= 'A' && ch <= 'Z') {
+					tiles[row][col].letter = Character.toLowerCase(ch);
+					tiles[row][col].fresh = true;
 					col++;
 				}
 				else if (ch == '*' || ch == Tile.Empty) {
@@ -696,6 +706,7 @@ public class Board implements Serializable {
 				System.err.printf("didn't get enough tiles! only got to %d,%d", row, col);
 			}
 			else {
+				clearPending();
 				success = true;
 			}
 			
