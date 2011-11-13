@@ -28,6 +28,6 @@ public class Tile implements Serializable {
 	// used for attempting word placement
 	public boolean pending;
 	
-	// used for undoing and indicated previous move
+	// used for undoing and indicating previous move
 	public boolean fresh;
 }
