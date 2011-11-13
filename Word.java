@@ -7,9 +7,14 @@ public class Word implements Comparable<Word> {
 	public int score;
 	public String where;
 	public ArrayList<String> bonuses;
+	public ArrayList<Word> attached;
 	
-	public Word() {
+	// 0-based indexes for 'row' and 'col'
+	public Word(String w, int row, int col, String orientation) {
+		word = w;
 		bonuses = new ArrayList<String>();
+		attached = new ArrayList<Word>();
+		where = String.format("%s %d,%d", orientation, row+1, col+1);
 	}
 	
 	// Comparable
