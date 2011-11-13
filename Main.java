@@ -101,6 +101,17 @@ public class Main {
 				b.print("letters");
 				b.findBest(args[3], Integer.parseInt(args[4]));
 			}
+		} else if (command.equals("load")) {
+			if (args.length < 4) {
+				System.err.println("usage: load <filename>");
+			} else {
+				if (b.load(args[3])) {
+					System.out.println("board loaded successfully");
+				}
+				else {
+					System.exit(1);
+				}
+			}
 		} else {
 			System.err.println("unknown command: " + command);
 		}
