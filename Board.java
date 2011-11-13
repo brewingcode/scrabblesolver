@@ -655,7 +655,8 @@ public class Board implements Serializable {
 	// to the output of Board::print("letters")
 	public boolean load(String fileName) {
 		FileInputStream fis = null;
-
+		boolean success = false;
+		
 		try {
 			fis = new FileInputStream(fileName);
 			Reader r = new InputStreamReader(fis, "UTF-8");
@@ -666,17 +667,24 @@ public class Board implements Serializable {
 			
 			while ((intch = r.read()) != -1) {
 				Character ch = (char) intch;
-				if (ch >= 'a' || ch <= 'z' || ch >= 'A' || ch <= 'Z') {
-					if (col >= tiles.length) {
-						row++;
-						col = 0;
-					}
-					
+				System.err.printf("%c", ch);
+				
+				if (col >= tiles.length) {
+					row++;
+					col = 0;
+				}
+				
+				if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
 					tiles[row][col].letter = ch;
+					col++;
+				}
+				else if (ch == '*' || ch == Tile.Empty) {
+					tiles[row][col].letter = Tile.Empty;
+					col++;
 				}
 				else if (ch == '\n') {
 					if (col != tiles.length - 1) {
-						System.err.printf("unexpected newline in input file at coord %d,%d\n", row, col);
+						//System.err.printf("unexpected newline in input file at coord %d,%d\n", row, col);
 					}
 				}
 				else {
@@ -684,15 +692,18 @@ public class Board implements Serializable {
 				}
 			}
 			
-			if (row != tiles.length - 1 || col != tiles.length) {
+			if (row < tiles.length) {
 				System.err.printf("didn't get enough tiles! only got to %d,%d", row, col);
+			}
+			else {
+				success = true;
 			}
 			
 			fis.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-	
-		return true;
+		
+		return success;
 	}
 }
