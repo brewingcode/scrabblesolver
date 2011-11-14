@@ -290,7 +290,7 @@ public class Board implements Serializable {
 
 		if (counts)	thisWord.score *= wordBonus;
 
-		if (counts && w != null && !thisWord.equals(w.word)) {
+		if (counts && w != null && !thisWord.word.equals(w.word)) {
 			w.attach(thisWord);
 		}
 		
