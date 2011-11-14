@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Tile implements Serializable {
 	
 	public static char Empty = '-';
+	public static char Blank = '_';
 	
 	public Tile(int row, int col) {
 		this.row = row;
@@ -14,6 +15,7 @@ public class Tile implements Serializable {
 		wordBonus = 1;
 		pending = false;
 		fresh = false;
+		blank = false;
 	}
 	
 	// "row" and "col" are 0-index
@@ -30,6 +32,9 @@ public class Tile implements Serializable {
 	
 	// used for undoing and indicating previous move
 	public boolean fresh;
+	
+	// for blank letters
+	public boolean blank;
 	
 	public String toString() {
 		return String.format("[%s]", letter);
