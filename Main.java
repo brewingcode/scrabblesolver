@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Main {
 
@@ -22,6 +23,8 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException,
 			IOException {
 
+		//test();
+		
 		if (args.length < 3) {
 			System.err.println("usage: java Main <dictionary file> <board file> [command]");
 			System.err.println("valid commands: print play find load");
@@ -157,5 +160,19 @@ public class Main {
 		}
 
 		return b;
+	}
+	
+	@SuppressWarnings("unused")
+	private static void test() {
+		HashSet<Word> h = new HashSet<Word>();
+		
+		Word w = new Word("foobar");
+		h.add(w);
+		w = new Word("baz");
+		h.add(w);
+		w = new Word("foobar");
+		h.add(w);
+		System.out.println(h);
+		System.exit(0);
 	}
 }
