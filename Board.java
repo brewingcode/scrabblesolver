@@ -27,7 +27,7 @@ public class Board implements Serializable {
 	// what turn we are on
 	private int turn;
 	
-	// be noisy on stderr
+	// be noisy on stdout
 	// (Some functions have commented out tracing on System.err, these were 
 	// development-time tracing for debugging)
 	private transient boolean noisy;
@@ -45,7 +45,6 @@ public class Board implements Serializable {
 		turn = 0;
 		bingoCount = -1;
 		bingoBonus = 0;
-		noisy = false;
 		
 		wordsWithFriends();
 	}
@@ -174,7 +173,8 @@ public class Board implements Serializable {
 	// WARNING: row and col are 1-based indexes NOT 0-based!!!
 	public int play(int row, int col, String word, String dir) {
 		int score = 0;
-		if (fits(row, col, word, dir)) {
+		Word w = new Word(word, row, col, dir);
+		if (fits(row, col, w, dir)) {
 			score = score(true, null);
 		}
 		clearPending();
@@ -267,28 +267,31 @@ public class Board implements Serializable {
 			thisWord.word += t.letter;
 			
 			if (t.pending)  {
-				// this word counts
+				// this word counts...
 				counts = true;
 
-				// we count bonuses
-				wordBonus *= t.wordBonus;
-				thisWord.addBonuses(t.wordBonus, t.letterBonus);
-				if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
-				
-				// bump our score
-				thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
+				if (t.blank) {
+					// ...but this tile doesn't score anything
+				}
+				else {
+					// ...and this word scores points!
+					wordBonus *= t.wordBonus;
+					thisWord.addBonuses(t.wordBonus, t.letterBonus);
+					if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
+					thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
+				}
 			}
 			else {
 				// if the tile isn't pending, it's just worth the value of the letter, 
-				// no bonuses
-				thisWord.score += letterValues[t.letter - 'a'];
+				// UNLESS it's blank, in which case it is worth jack
+				if (!t.blank) thisWord.score += letterValues[t.letter - 'a'];
 			}
 		}
 
 		if (counts)	thisWord.score *= wordBonus;
 
 		if (counts && w != null && !thisWord.equals(w.word)) {
-			w.attached.add(thisWord);
+			w.attach(thisWord);
 		}
 		
 		//if (counts) System.err.printf("scoreWord: %d,%d %s %s %s\n", row, col, thisWord.word, orientation, ( counts ? "true" : "false"));
@@ -300,11 +303,12 @@ public class Board implements Serializable {
 	// - geometry (fits on the board)
 	// - touches existing played tile
 	// - all words are found in the dictionary
-	private boolean fits(int startRow, int startCol, String word, String dir) {
-		//System.err.printf("fits: %d,%d %s %s\n", startRow, startCol, dir, word);
+	// SIDE EFFECT: sets pending on the word that is played, in prep for calling score()
+	private boolean fits(int startRow, int startCol, Word word, String dir) {
+		//System.err.printf("fits: %d,%d %s %s\n", startRow, startCol, dir, word.word);
 		// break the word into its characters
-		ArrayList<Character> letters = toArray(word);
-		
+		ArrayList<Character> letters = toArray(word.word);
+
 		// as we're placing letters, we'll also check that we touch an existing letter
 		boolean touchesExisting = false;
 		if (turn == 0) {
@@ -313,8 +317,8 @@ public class Board implements Serializable {
 			// to be the center tile
 			touchesExisting = true;
 		}
-
-		for (int i = 0; i < word.length(); i++) {
+		int end = letters.size();
+		for (int i = 0; i < end; i++) {
 			int row = startRow - 1 + (dir.equals("col") ? i : 0);
 			int col = startCol - 1 + (dir.equals("row") ? i : 0);
 
@@ -332,12 +336,22 @@ public class Board implements Serializable {
 			if (tiles[row][col].letter == Tile.Empty) {
 				tiles[row][col].letter = letters.remove(0);
 				tiles[row][col].pending = true;
+				if (noisy) System.out.printf("fits: %c on empty\n", tiles[row][col].letter);
+
+				// check if we just placed a blank tile
+				for (int blank : word.blankLetters()) {
+					if (blank == i) {
+						tiles[row][col].blank = true;
+						break;
+					}
+				}
 			}
 			else if (tiles[row][col].letter == letters.get(0)) {
+				if (noisy) System.out.printf("fits: %c exists\n", tiles[row][col].letter);
 				letters.remove(0);
 			}
 			else {
-				if (noisy) System.out.printf("couldn't play on (%d,%d), contains %c\n", row+1, col+1, tiles[row][col].letter);
+				if (noisy) System.out.printf("fits: couldn't play on (%d,%d), contains %c\n", row+1, col+1, tiles[row][col].letter);
 				break;
 			}
 			
@@ -347,21 +361,22 @@ public class Board implements Serializable {
 		}
 
 		if (!letters.isEmpty()) {
-			if (noisy) System.out.println("couldn't use all letters: " + letters.toString());
+			if (noisy) System.out.println("fits: couldn't use all letters: " + letters.toString());
 			return false;
 		}
 		
 		if (!touchesExisting) {
-			if (noisy) System.out.println("word doesn't touch an existing letter");
+			if (noisy) System.out.println("fits: word doesn't touch an existing letter");
 			return false;
 		}
 		
 		if (!checkWords()) {
+			if (noisy) System.out.println("fits: checkWords didn't pass");
 			return false;
 		}
 		
 		// at this point, the word is a valid play
-		//System.err.println("true");	
+		//System.err.println("fits: true");
 		return true;
 	}
 	
@@ -393,6 +408,7 @@ public class Board implements Serializable {
 					tiles[i][j].letter = Tile.Empty;
 				}
 				tiles[i][j].pending = false;
+				tiles[i][j].blank = false;
 			}
 		}
 	}
@@ -475,6 +491,7 @@ public class Board implements Serializable {
 		if (dictionary.containsKey(key)) {
 			ArrayList<String> words = dictionary.get(key);
 			if (words.contains(word)) {
+				if (noisy) System.out.printf("checkWord: true %s\n", word);
 				return true;
 			}
 		}
@@ -497,19 +514,33 @@ public class Board implements Serializable {
 
 		// downcase the incoming letters
 		letters = letters.toLowerCase();
+		for (char c : letters.toCharArray()) {
+			if (c >= 'a' && c <= 'z') {
+				// lower case letters are valid
+			}
+			else if (c == Tile.Blank) {
+				// blank tile is an asterisk
+			}
+			else {
+				System.err.printf("invalid character in tile set: %c\n", c);
+			}
+		}
 		
 		// the hash of Word objects that we will build, the hash will
 		// cut out duplicates
 		HashSet<Word> wordsHash = new HashSet<Word>();
+		int c = 0;
 		
 		for (int i = 0; i < tiles.length; i++) {
 			// check row i
 			for (Word w : searchFile(i,0,"row", letters)) {
 				wordsHash.add(w);
+				c++;
 			}
 			// check col i
 			for (Word w : searchFile(0,i,"col", letters)) {
 				wordsHash.add(w);
+				c++;
 			}
 		}
 
@@ -517,6 +548,8 @@ public class Board implements Serializable {
 		ArrayList<Word> words = new ArrayList<Word>();
 		words.addAll(wordsHash);
 		Collections.sort(words);
+		
+		System.out.printf("wordsHash: %d, words: %d\n", c, words.size());
 		
 		// and print what we found!
 		for (Word w : words) {
@@ -575,16 +608,17 @@ public class Board implements Serializable {
 		
 		//System.err.printf("findWords: %s in %s\n", lettersArray.toString(), buckets.toString());
 		
-		for (String word : allKnownWords(lettersArray)) {
+		for (Word possible : allKnownWords(lettersArray)) {
+			//System.err.println("possible word: " + possible);
 			for (int i = 0; i < tiles.length; i++) {
-				if (linesUp(word, letters, buckets, i)) {
+				if (linesUp(possible, letters, buckets, i)) {
 					int row = dir.equals("row") ? index : i;
 					int col = dir.equals("row") ? i : index;
-					if (fits(row+1, col+1, word, dir)) {
-						Word w = new Word(word, row, col, dir);
-						if (score(false, w) > 0) {
-							w.where = String.format("%s %d,%d", dir, row+1, col+1);
-							words.add(w);
+					if (fits(row+1, col+1, possible, dir)) {
+						possible.setLocation(row, col, dir);
+						Word valid = possible.clone();
+						if (score(false, valid) > 0) {
+							words.add(valid);
 						}
 					}
 					clearPending();
@@ -597,61 +631,103 @@ public class Board implements Serializable {
 	
 	// given a word and a location, checks that the letters in 'word' 
 	// match up with the letters already on the board
-	private boolean linesUp(String word, String available, ArrayList<Character> buckets, int i) {
-		//System.err.printf("linesUp: %s %s %s[%d]\n", word, available, buckets, i);
-		ArrayList<Character> letters = toArray(word);
+	private boolean linesUp(Word word, String available, ArrayList<Character> buckets, int start) {
+		ArrayList<Character> letters = toArray(word.word);
 		ArrayList<Character> avail = toArray(available);
+		int i = start;
+		boolean linesUp = true;
 		
 		for (Character c : letters) {
-			if (i >= tiles.length) break;
+			if (i >= buckets.size()) {
+				linesUp = false;
+				break;
+			}
 			
 			if (buckets.get(i) == Tile.Empty) {
-				if (avail.remove(c)) {
+				if (avail.contains(c)) {
 					// good
+					avail.remove(avail.indexOf(c));
+					i++;
+				}
+				else if (avail.contains(Tile.Blank)) {
+					avail.remove(avail.indexOf(Tile.Blank));
 					i++;
 				}
 				else {
-					return false;
+					linesUp = false;
+					break;
 				}
 			}
-			else if (c == buckets.get(i)) {
+			else if (buckets.get(i) == c) {
 				i++;
 			}
 			else {
+				linesUp = false;
 				break;
 			}
 		}					
 		
-		//System.err.println(avail.size() == 0 ? "true" : "false");
-		return avail.size() == 0;
+		//System.err.printf("linesUp: %s %s %s %s[%d] %d %s\n", (linesUp ? "true" : "false"), word.word, available, buckets, start, i, avail);
+		return linesUp;
 	}
 	
 	// given a bunch of letters, return all the words that can be created with them
 	// 1. our dictionary has keys of sorted strings
 	// 2. for each of those keys, check if the letters in the key are in 'letters'
-	private ArrayList<String> allKnownWords(ArrayList<Character> letters) {
+	private ArrayList<Word> allKnownWords(ArrayList<Character> letters) {
 		//System.err.printf("allKnownWords: %s\n", letters.toString());
-		ArrayList<String> words = new ArrayList<String>();
+		ArrayList<Word> words = new ArrayList<Word>();
 		
-		for (String key : dictionary.keySet()) {
-			ArrayList<Character> set = (ArrayList<Character>) letters.clone();
-			boolean hit = true;
-			for (char c : key.toCharArray()) {
-				int i = set.indexOf(c);
-				if (i >= 0) {
-					set.remove(i);
+		if (letters.contains(Tile.Blank)) {
+			letters.remove(letters.indexOf(Tile.Blank));
+			for (char c = 'a'; c <= 'z'; c++) {
+				@SuppressWarnings("unchecked")
+				ArrayList<Character> extra = (ArrayList<Character>) letters.clone();
+				extra.add(c);
+				
+				for (Word w : allKnownWords(extra)) {
+					if (w.word.indexOf(c) >= 0) {
+						// we expand w into all the valid words it could be
+						for (int i = 0; i < w.word.length(); i++) {
+							if (w.word.charAt(i) == c) {
+								Word x = w.clone();
+								x.blankLetters().add(i);
+								//System.err.printf("allKnownWords: %s with blank\n", x.word);
+								words.add(x);
+							}
+						}
+					}
+					else {
+						//System.err.printf("allKnownWords: %s\n", w.word);
+						words.add(w);
+					}
 				}
-				else {
-					hit = false;
-					break;
-				}
-			}
-			
-			if (hit) {
-				words.addAll(dictionary.get(key));
 			}
 		}
-
+		else {
+			for (String key : dictionary.keySet()) {
+				@SuppressWarnings("unchecked")
+				ArrayList<Character> set = (ArrayList<Character>) letters.clone();
+				boolean hit = true;
+				for (char c : key.toCharArray()) {
+					int i = set.indexOf(c);
+					if (i >= 0) {
+						set.remove(i);
+					}
+					else {
+						hit = false;
+						break;
+					}
+				}
+				
+				if (hit) {
+					for (String s : dictionary.get(key)) {
+						words.add(new Word(s));
+					}
+				}
+			}
+		}
+		
 		//System.err.println("allKnownWords: " + words);
 		return words;
 	}
@@ -679,7 +755,7 @@ public class Board implements Serializable {
 			
 			while ((intch = r.read()) != -1) {
 				Character ch = (char) intch;
-				System.err.printf("%c", ch);
+				System.out.printf("%c", ch);
 				
 				if (col >= tiles.length) {
 					row++;
