@@ -174,6 +174,13 @@ public class Board implements Serializable {
 	public int play(int row, int col, String word, String dir) {
 		int score = 0;
 		Word w = new Word(word, row, col, dir);
+		for (int i = 0; i < word.length(); i++) {
+			if (word.charAt(i) >= 'A' && word.charAt(i) <= 'Z') {
+				w.blankLetters().add(i);
+			}
+		}
+		w.word = word.toLowerCase();
+		
 		if (fits(row, col, w, dir)) {
 			score = score(true, null);
 		}
@@ -294,7 +301,7 @@ public class Board implements Serializable {
 			w.attach(thisWord);
 		}
 		
-		//if (counts) System.err.printf("scoreWord: %d,%d %s %s %s\n", row, col, thisWord.word, orientation, ( counts ? "true" : "false"));
+		if (noisy) System.out.printf("scoreWord: %s %s\n", thisWord, ( counts ? "true" : "false"));
 		return counts ? thisWord.score : 0;
 	}
 	
