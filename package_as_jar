@@ -1,0 +1,2 @@
+#!/bin/bash
+jar cvfe scrabble.jar com.alex.scrabblesolver.Main com/alex/scrabblesolver/*.class com/alex/scrabblesolver/dictionary.txt
