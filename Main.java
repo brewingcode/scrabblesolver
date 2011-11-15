@@ -92,8 +92,11 @@ public class Main {
 						Integer.parseInt(args[3]), args[4], args[5]);
 				if (score > 0) {
 					b.print("letters");
-					System.out.println("'" + args[4] + "' was worth " + score
-							+ " points");
+					System.out.println("'" + args[4] + "' was worth " + score + " points");
+				}
+				else {
+					System.err.println("That was not a valid play");
+					System.exit(1);
 				}
 			}
 		} else if (command.equals("find")) {
