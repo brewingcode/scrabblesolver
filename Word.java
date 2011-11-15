@@ -45,7 +45,14 @@ public class Word implements Comparable<Word> {
 	}
 
 	public String toString() {
-		String me = String.format("%3d  %s  %s", score, where, word.toUpperCase());
+		String me = String.format("%3d  %s  ", score, where);
+		for (int i = 0; i < word.length(); i++) {
+			me += word.charAt(i);
+			if (blankLetters().contains(i)) {
+				me += "*";
+			}
+			
+		}
 		if (bonuses != null && bonuses.size() > 0) {
 			me += "  " + bonuses.toString();
 		}
