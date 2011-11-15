@@ -28,7 +28,7 @@ public class Main {
 		
 		if (args.length < 2) {
 			System.err.println("usage: java Main <board file> [command]");
-			System.err.println("valid commands: print play find load");
+			System.err.println("valid commands: print play find load blank");
 			System.exit(1);
 		}
 
@@ -117,6 +117,13 @@ public class Main {
 				else {
 					System.exit(1);
 				}
+			}
+		} else if (command.equals("blank")) {
+			if (args.length < 4) {
+				System.err.println("usage: blank <row> <col>");
+			} else {
+				b.toggleBlank(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+				b.print("letters");
 			}
 		} else {
 			System.err.println("unknown command: " + command);
