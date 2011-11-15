@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class Board implements Serializable {
-	
+    private final static long serialVersionUID = -7508045570854076475L;	
+
 	// dictionary of words (see Main.java)
 	public transient HashMap<String, ArrayList<String>> dictionary;
 	

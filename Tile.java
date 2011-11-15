@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public class Tile implements Serializable {
 	
+	private static final long serialVersionUID = 4556286527432162412L;
+	
 	public static char Empty = '-';
 	public static char Blank = '_';
 	
