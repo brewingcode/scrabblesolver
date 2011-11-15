@@ -41,6 +41,7 @@ public class Main {
 		// key
 		HashMap<String, ArrayList<String>> words = new HashMap<String, ArrayList<String>>();
 		BufferedReader input = null;
+		@SuppressWarnings("unused")
 		int wordCount = 0;
 		try {
 			InputStream in = Main.class.getResourceAsStream("dictionary.txt");
