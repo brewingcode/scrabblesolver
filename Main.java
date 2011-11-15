@@ -5,8 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -25,15 +26,14 @@ public class Main {
 
 		//test();
 		
-		if (args.length < 3) {
-			System.err.println("usage: java Main <dictionary file> <board file> [command]");
+		if (args.length < 2) {
+			System.err.println("usage: java Main <board file> [command]");
 			System.err.println("valid commands: print play find load");
 			System.exit(1);
 		}
 
-		String dictionaryFile = args[0];
-		String boardFile = args[1];
-		String command = args[2];
+		String boardFile = args[0];
+		String command = args[1];
 
 		// read in dictionary of words. dictionary keys are the sorted letters
 		// of the word,
@@ -43,7 +43,8 @@ public class Main {
 		BufferedReader input = null;
 		int wordCount = 0;
 		try {
-			input = new BufferedReader(new FileReader(dictionaryFile));
+			InputStream in = Main.class.getResourceAsStream("dictionary.txt");
+			input = new BufferedReader(new InputStreamReader(in));
 			String word;
 			while ((word = input.readLine()) != null) {
 				// sort the letters in the word
@@ -68,47 +69,45 @@ public class Main {
 			}
 		}
 
-		System.out.println("loaded " + wordCount + " words into "
-				+ words.size() + " keys");
+		//System.out.println("loaded " + wordCount + " words into " + words.size() + " keys");
 
 		Board b = loadBoard(boardFile);
 		b.dictionary = words;
 
 		if (command.equals("print")) {
-			if (args.length < 3) {
+			if (args.length < 2) {
 				System.err.println("usage: print [ 'bonuses' ]");
 			} else {
-				if (args.length == 3) {
+				if (args.length == 2) {
 					b.print("letters");
 				} else {
-					b.print(args[3]);
+					b.print(args[2]);
 				}
 			}
 		} else if (command.equals("play")) {
-			if (args.length < 7) {
-				System.err
-						.println("usage: play <row> <col> <word> < 'row' | 'col' >");
+			if (args.length < 6) {
+				System.err.println("usage: play <row> <col> <word> < 'row' | 'col' >");
 			} else {
-				int score = b.play(Integer.parseInt(args[3]),
-						Integer.parseInt(args[4]), args[5], args[6]);
+				int score = b.play(Integer.parseInt(args[2]),
+						Integer.parseInt(args[3]), args[4], args[5]);
 				if (score > 0) {
 					b.print("letters");
-					System.out.println("'" + args[5] + "' was worth " + score
+					System.out.println("'" + args[4] + "' was worth " + score
 							+ " points");
 				}
 			}
 		} else if (command.equals("find")) {
-			if (args.length < 5) {
+			if (args.length < 4) {
 				System.err.println("usage: find <letters> <limit>");
 			} else {
 				b.print("letters");
-				b.findBest(args[3], Integer.parseInt(args[4]));
+				b.findBest(args[2], Integer.parseInt(args[3]));
 			}
 		} else if (command.equals("load")) {
-			if (args.length < 4) {
+			if (args.length < 3) {
 				System.err.println("usage: load <filename>");
 			} else {
-				if (b.load(args[3])) {
+				if (b.load(args[2])) {
 					System.out.println("board loaded successfully");
 				}
 				else {
