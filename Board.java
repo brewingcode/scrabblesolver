@@ -211,10 +211,13 @@ public class Board implements Serializable {
 		ArrayList<Tile> colBuffer = new ArrayList<Tile>();
 		
 		for (int i = 0; i < tiles.length; i++) {
+			rowBuffer.clear();
+			colBuffer.clear();
 			for (int j = 0; j < tiles.length; j++) {
 				// buffer up row i
 				if (tiles[i][j].letter == Tile.Empty) {
 					score += scoreWord(rowBuffer, word, "row");
+					//System.err.printf("hit empty on row: %d\n", score);
 					rowBuffer.clear();
 				}
 				else {
@@ -224,6 +227,7 @@ public class Board implements Serializable {
 				// buffer up column i
 				if (tiles[j][i].letter == Tile.Empty){
 					score += scoreWord(colBuffer, word, "col");
+					//System.err.printf("hit empty on col: %d\n", score);
 					colBuffer.clear();
 				}
 				else {
@@ -240,10 +244,11 @@ public class Board implements Serializable {
 					tiles[i][j].fresh = tiles[i][j].pending ? true : false;
 				}
 			}
+			score += scoreWord(rowBuffer, word, "row");
+			//System.err.printf("last rowBuffer: %d\n", score);
+			score += scoreWord(colBuffer, word, "col");
+			//System.err.printf("last colBuffer: %d\n", score);
 		}
-		
-		score += scoreWord(rowBuffer, word, "row");
-		score += scoreWord(colBuffer, word, "col");
 		
 		if (pendingCount == bingoCount) {
 			if (noisy) System.out.println("Bingo!");
@@ -282,15 +287,16 @@ public class Board implements Serializable {
 				}
 				else {
 					// ...and this word scores points!
+					//System.err.printf("scoring letter: %c\n", t.letter);
 					wordBonus *= t.wordBonus;
 					thisWord.addBonuses(t.wordBonus, t.letterBonus);
-					if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
 					thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
 				}
 			}
 			else {
 				// if the tile isn't pending, it's just worth the value of the letter, 
 				// UNLESS it's blank, in which case it is worth jack
+				//System.err.printf("non-scoring letter: %c\n", t.letter);
 				if (!t.blank) thisWord.score += letterValues[t.letter - 'a'];
 			}
 		}
@@ -301,7 +307,7 @@ public class Board implements Serializable {
 			w.attach(thisWord);
 		}
 		
-		if (noisy) System.out.printf("scoreWord: %s %s\n", thisWord, ( counts ? "true" : "false"));
+		//System.err.printf("scoreWord: %s %s\n", thisWord, ( counts ? "true" : "false"));
 		return counts ? thisWord.score : 0;
 	}
 	
@@ -415,7 +421,6 @@ public class Board implements Serializable {
 					tiles[i][j].letter = Tile.Empty;
 				}
 				tiles[i][j].pending = false;
-				tiles[i][j].blank = false;
 			}
 		}
 	}
@@ -775,7 +780,7 @@ public class Board implements Serializable {
 				}
 				else if (ch >= 'A' && ch <= 'Z') {
 					tiles[row][col].letter = Character.toLowerCase(ch);
-					tiles[row][col].fresh = true;
+					tiles[row][col].blank = true;
 					col++;
 				}
 				else if (ch == '*' || ch == Tile.Empty) {
