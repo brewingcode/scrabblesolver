@@ -292,6 +292,7 @@ public class Board implements Serializable {
 					//System.err.printf("scoring letter: %c\n", t.letter);
 					wordBonus *= t.wordBonus;
 					thisWord.addBonuses(t.wordBonus, t.letterBonus);
+					if (w != null) w.addBonuses(t.wordBonus, t.letterBonus);
 					thisWord.score += letterValues[t.letter - 'a'] * t.letterBonus;
 				}
 			}
@@ -782,25 +783,44 @@ public class Board implements Serializable {
 			
 			while ((intch = r.read()) != -1) {
 				Character ch = (char) intch;
-				System.out.printf("%c", ch);
+				//System.err.printf("%c", ch);
 				
 				if (col >= tiles.length) {
 					row++;
 					col = 0;
 				}
 				
+				// process different chars
 				if (ch >= 'a' && ch <= 'z') {
+					if (row == tiles.length) System.err.println("too many characters");
 					tiles[row][col].letter = ch;
+					if (noisy) System.out.printf("%d,%d: %c\n", row+1, col+1, tiles[row][col].letter);
 					col++;
 				}
 				else if (ch >= 'A' && ch <= 'Z') {
+					if (row == tiles.length) System.err.println("too many characters");
 					tiles[row][col].letter = Character.toLowerCase(ch);
-					tiles[row][col].blank = true;
+					tiles[row][col].fresh = true;
+					if (noisy) System.out.printf("%d,%d: %c (just played)\n", row+1, col+1, tiles[row][col].letter);
 					col++;
 				}
-				else if (ch == '*' || ch == Tile.Empty) {
+				else if (ch == '#' || ch == Tile.Empty) {
+					if (row == tiles.length) System.err.println("too many characters");
 					tiles[row][col].letter = Tile.Empty;
+					if (noisy) System.out.printf("%d,%d: %c\n", row+1, col+1, tiles[row][col].letter);
 					col++;
+				}
+				else if (ch == '*') {
+					int prevRow = row;
+					int prevCol = col - 1;
+					
+					if (prevCol < 0) {
+						prevCol = tiles.length - 1;
+						prevRow--;
+					}
+					
+					tiles[prevRow][prevCol].blank = true;
+					if (noisy) System.out.printf("%d,%d: %c* (blank)\n", prevRow+1, prevCol+1, tiles[prevRow][prevCol].letter);
 				}
 				else if (ch == '\n') {
 					if (col != tiles.length - 1) {
@@ -810,6 +830,7 @@ public class Board implements Serializable {
 				else {
 					// just skip everything else
 				}
+				
 			}
 			
 			if (row < tiles.length) {
@@ -823,6 +844,7 @@ public class Board implements Serializable {
 			
 			fis.close();
 		} catch (Exception ex) {
+			System.err.println("\nerror during load");
 			ex.printStackTrace();
 		}
 		
@@ -834,3 +856,5 @@ public class Board implements Serializable {
 		tiles[row-1][col-1].blank = !tiles[row-1][col-1].blank;
 	}
 }
+	
+	
