@@ -703,7 +703,7 @@ public class Board implements Serializable {
 	// given a bunch of letters, return all the words that can be created with them
 	// 1. our dictionary has keys of sorted strings
 	// 2. for each of those keys, check if the letters in the key are in 'letters'
-	private ArrayList<Word> allKnownWords(ArrayList<Character> letters) {
+	public ArrayList<Word> allKnownWords(ArrayList<Character> letters) {
 		//System.err.printf("allKnownWords: %s\n", letters.toString());
 		ArrayList<Word> words = new ArrayList<Word>();
 		
@@ -853,7 +853,29 @@ public class Board implements Serializable {
 	
 	// 1-based indexes
 	public void toggleBlank(int row, int col) {
-		tiles[row-1][col-1].blank = !tiles[row-1][col-1].blank;
+		if (tiles[row-1][col-1].letter != Tile.Empty) {
+			tiles[row-1][col-1].blank = !tiles[row-1][col-1].blank;
+		}
+	}
+	
+	public int undo() {
+		int undone = 0;
+		
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles.length; j++) {
+				Tile t = tiles[i][j];
+				
+				if (t.fresh) {
+					t.letter = Tile.Empty;
+					t.fresh = false;
+					t.blank = false;
+					
+					undone++;
+				}
+			}
+		}
+
+		return undone;
 	}
 }
 	
