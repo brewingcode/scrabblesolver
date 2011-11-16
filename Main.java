@@ -135,7 +135,7 @@ public class Main {
 				ArrayList<Character> letters = new ArrayList<Character>();
 				for (char c : args[2].toCharArray()) letters.add(c);
 					
-				ArrayList<Word> list = b.allKnownWords(letters);
+				ArrayList<Word> list = b.allKnownWords(letters, null);
 				Collections.sort(list);
 				for (Word w : list) {
 					System.out.println(w);
