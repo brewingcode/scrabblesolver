@@ -101,4 +101,9 @@ public class Word implements Comparable<Word> {
 		
 		return w;
 	}
+	
+	public void bingo() {
+		if (bonuses == null) bonuses = new ArrayList<String>();
+		bonuses.add("B");
+	}
 }

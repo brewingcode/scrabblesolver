@@ -255,6 +255,7 @@ public class Board implements Serializable {
 		if (pendingCount == bingoCount) {
 			if (noisy) System.out.println("Bingo!");
 			score += bingoBonus;
+			if (word != null) word.bingo();
 		}
 		
 		if (commit) { 
