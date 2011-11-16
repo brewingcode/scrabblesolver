@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -28,7 +29,7 @@ public class Main {
 		
 		if (args.length < 2) {
 			System.err.println("usage: java Main <board file> [command]");
-			System.err.println("valid commands: print play find load blank");
+			System.err.println("valid commands: print play find load blank words undo");
 			System.exit(1);
 		}
 
@@ -125,7 +126,33 @@ public class Main {
 				b.toggleBlank(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
 				b.print("letters");
 			}
-		} else {
+			
+		} else if (command.equals("words")) {
+			if (args.length < 3) {
+				System.err.println("usage: words <letters>");
+			}
+			else {
+				ArrayList<Character> letters = new ArrayList<Character>();
+				for (char c : args[2].toCharArray()) letters.add(c);
+					
+				ArrayList<Word> list = b.allKnownWords(letters);
+				Collections.sort(list);
+				for (Word w : list) {
+					System.out.println(w);
+				}
+			}
+		}
+		else if (command.equals("undo")) {
+			int count = b.undo();
+			if (count > 0) {
+				System.out.printf("Undid %d tiles\n", count);
+				b.print("letters");
+			}
+			else {
+				System.out.println("Nothing to undo");
+			}
+		}
+		else {
 			System.err.println("unknown command: " + command);
 		}
 
