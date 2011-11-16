@@ -1,0 +1,6 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+for i in *.java; do echo -n "$i: "; perl -ne 'print if (!/\s*\/\// and /\S/)' "$i" | wc | awk '{print $1}'; done
+echo 
+echo -n "Total: "
+perl -ne 'print if (!/\s*\/\// and /\S/)' *.java | wc | awk '{print $1}'
