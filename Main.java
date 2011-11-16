@@ -102,11 +102,12 @@ public class Main {
 				}
 			}
 		} else if (command.equals("find")) {
-			if (args.length < 4) {
+			if (args.length < 3) {
 				System.err.println("usage: find <letters> <limit>");
 			} else {
 				b.print("letters");
-				b.findBest(args[2], Integer.parseInt(args[3]));
+				int limit = args.length == 4 ? Integer.parseInt(args[3]) : 0;
+				b.findBest(args[2], limit);
 			}
 		} else if (command.equals("load")) {
 			if (args.length < 3) {
