@@ -889,6 +889,49 @@ public class Board implements Serializable {
 
 		return undone;
 	}
+	
+	public void letterDistribution(String leftovers) {
+		// index 0 thru 25 are for letters a to z, index 26 is for blank tiles
+		int[] counts = new int[27];
+		int total = 0;
+		
+		if (leftovers == null) leftovers = "";
+		
+		leftovers = leftovers.toLowerCase();
+		
+		for (int i = 0; i < leftovers.length(); i++) {
+			if (leftovers.charAt(i) ==  '*') {
+				counts[leftovers.charAt(i-1)-'a']--;
+				counts[26]++;
+			}
+			else {
+				counts[leftovers.charAt(i)-'a']++;
+			}
+			total++;
+		}
+
+		
+		for (int i = 0; i < tiles.length; i++){
+			for (int j = 0; j < tiles.length; j++) {
+				Tile t = tiles[i][j];
+				if (t.letter != Tile.Empty){
+					if (t.blank) {
+						counts[26]++;
+					}
+					else {
+						counts[t.letter-'a']++;
+					}
+					total++;
+				}
+			}
+		}
+		
+		for (int i = 0; i < counts.length - 1; i++) {
+			System.out.printf("%c: %d\n", 'a' + i, counts[i]);
+		}
+		System.out.printf("_: %d\n", counts[26]);
+		System.out.printf("\ntotal: %d\n", total);
+	}
 }
 	
 	

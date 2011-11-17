@@ -29,7 +29,7 @@ public class Main {
 		
 		if (args.length < 2) {
 			System.err.println("usage: java Main <board file> [command]");
-			System.err.println("valid commands: print play find load blank words undo");
+			System.err.println("valid commands: print play find load blank words undo distribution");
 			System.exit(1);
 		}
 
@@ -152,6 +152,10 @@ public class Main {
 			else {
 				System.out.println("Nothing to undo");
 			}
+		}
+		else if (command.equals("distribution")) {
+			String leftovers = args.length >= 3 ? args[2] : "";
+			b.letterDistribution(leftovers);
 		}
 		else {
 			System.err.println("unknown command: " + command);
