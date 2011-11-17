@@ -328,12 +328,6 @@ public class Board implements Serializable {
 
 		// as we're placing letters, we'll also check that we touch an existing letter
 		boolean touchesExisting = false;
-		if (turn == 0) {
-			// the very first word is always counted as touching
-			// TODO: this allows the first word to be played anywhere, ie it's not guaranteed 
-			// to be the center tile
-			touchesExisting = true;
-		}
 		int end = letters.size();
 		for (int i = 0; i < end; i++) {
 			int row = startRow - 1 + (dir.equals("col") ? i : 0);
@@ -397,19 +391,26 @@ public class Board implements Serializable {
 	// 0-based indexes
 	// checks to see if the given tile has a neighboring tile that is played
 	private boolean validTile(int row, int col) {
-		if (row - 1 >= 0 && tiles[row-1][col].letter != Tile.Empty && tiles[row-1][col].pending == false) {
-			return true;
+		if (turn == 0) {
+			// there is only 1 valid tile to play on turn 0, that is the center
+			int center = tiles.length / 2;
+			return row == center && col == center;
 		}
-		if (row + 1 < tiles.length && tiles[row+1][col].letter != Tile.Empty && tiles[row+1][col].pending == false) {
-			return true;
+		else {
+			if (row - 1 >= 0 && tiles[row-1][col].letter != Tile.Empty && tiles[row-1][col].pending == false) {
+				return true;
+			}
+			if (row + 1 < tiles.length && tiles[row+1][col].letter != Tile.Empty && tiles[row+1][col].pending == false) {
+				return true;
+			}
+			if (col - 1 >= 0 && tiles[row][col-1].letter != Tile.Empty && tiles[row][col-1].pending == false) {
+				return true;
+			}
+			if (col + 1 < tiles.length && tiles[row][col+1].letter != Tile.Empty && tiles[row][col+1].pending == false) {
+				return true;
+			}
 		}
-		if (col - 1 >= 0 && tiles[row][col-1].letter != Tile.Empty && tiles[row][col-1].pending == false) {
-			return true;
-		}
-		if (col + 1 < tiles.length && tiles[row][col+1].letter != Tile.Empty && tiles[row][col+1].pending == false) {
-			return true;
-		}
-
+		
 		//System.err.printf("validTile: %d,%d: false\n", row, col);
 		return false;
 	}
