@@ -393,6 +393,7 @@ public class Board implements Serializable {
 	private boolean validTile(int row, int col) {
 		if (turn == 0) {
 			// there is only 1 valid tile to play on turn 0, that is the center
+            //return true;
 			int center = tiles.length / 2;
 			return row == center && col == center;
 		}
@@ -767,7 +768,19 @@ public class Board implements Serializable {
 				}
 			}
 		}
-		
+
+		// fill in a default score for these words
+		for (Word w : words) {
+			for (int i = 0; i < w.word.length(); i++) {
+				if (w.blankLetters().contains(i)) {
+					// skip this letter
+				}
+				else {
+					w.score += letterValues[w.word.charAt(i) - 'a'];
+				}
+			}
+		}
+
 		//System.err.println("allKnownWords: " + words);
 		return words;
 	}
