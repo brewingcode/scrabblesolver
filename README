@@ -1,0 +1,24 @@
+This is a Java command line client to find the best move in a Scrabble (Words
+With Friends) game.
+
+The script requires two or more arguments:
+
+1. A filepath, which will *always* be written to if it doesn't exist. If it 
+   does exist, it will be assumed to be a Serializable copy of a Board class.
+
+2. A command such as "print" or "find". This command is followed by command-
+   specific arguments, run the Main class to find out more.
+   
+Examples:
+ 
+# search for the highest-scoring valid word placement given your <letters>
+$ java Main myGame find <letters>
+
+# play a move as described by the arguments after the "play" command
+$ java Main myGame play ...
+
+# dump a list of raw words that can be formed with <letters>
+$ java Main myGame words <letters>
+
+# print the current state of board
+$ java Main myGame print
