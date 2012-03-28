@@ -1,5 +1,3 @@
-package com.alex.scrabblesolver;
-
 import java.io.Serializable;
 
 public class Tile implements Serializable {

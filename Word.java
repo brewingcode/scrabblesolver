@@ -1,5 +1,3 @@
-package com.alex.scrabblesolver;
-
 import java.util.ArrayList;
 
 public class Word implements Comparable<Word> {

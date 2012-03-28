@@ -1,5 +1,3 @@
-package com.alex.scrabblesolver;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +26,7 @@ public class Main {
 		//test();
 		
 		if (args.length < 2) {
-			System.err.println("usage: java Main <board file> [command]");
+			System.err.println("usage: <board file> <command> [args]");
 			System.err.println("valid commands: print play find load blank words undo distribution");
 			System.exit(1);
 		}

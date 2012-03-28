@@ -1,5 +1,3 @@
-package com.alex.scrabblesolver;
-
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
