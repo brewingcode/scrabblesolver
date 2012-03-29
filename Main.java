@@ -112,7 +112,7 @@ public class Main {
 				System.err.println("usage: load <filename>");
 			} else {
 				if (b.load(args[2])) {
-					System.out.println("board loaded successfully");
+					//System.out.println("board loaded successfully");
 				}
 				else {
 					System.exit(1);
@@ -171,7 +171,7 @@ public class Main {
 			out.writeObject(b);
 			out.close();
 
-			System.out.println("stored board in file '" + name + "'");
+			//System.out.println("stored board in file '" + name + "'");
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -190,7 +190,7 @@ public class Main {
 				in = new ObjectInputStream(fis);
 				b = (Board) in.readObject();
 				in.close();
-				System.out.println("loaded board '" + name + "'");
+				//System.out.println("loaded board '" + name + "'");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
